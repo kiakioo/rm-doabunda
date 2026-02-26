@@ -19,8 +19,7 @@ const Login = () => {
 
     try {
       // Pastikan URL ini sesuai dengan port backend Anda (5000)
-      const response = await axios.post('import.meta.env.VITE_API_URL', { username, password });
-      
+  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { username, password });      
       // Simpan data sesi
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -55,7 +54,7 @@ const Login = () => {
         errorMessage = error.response.data.message || 'Login gagal. Periksa kembali data Anda.';
       } else if (error.request) {
         // Request terkirim tapi tidak ada respon (Backend MATI atau port salah)
-        errorMessage = 'Tidak dapat terhubung ke server Backend. Pastikan server (port 5000) sudah menyala.';
+        errorMessage = 'Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda.';
       }
 
       Swal.fire({
