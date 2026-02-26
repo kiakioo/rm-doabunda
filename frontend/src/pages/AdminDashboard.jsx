@@ -1,0 +1,104 @@
+import React, { useState } from 'react';
+// Penambahan import ikon Wallet untuk tombol Buku Pengeluaran
+import { LayoutDashboard, Utensils, ClipboardList, LogOut, TrendingUp, MonitorSmartphone, Receipt, Users, Wallet } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const AdminDashboard = () => {
+  const [stats, setStats] = useState({ totalRevenue: 0, totalTransactions: 0 });
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
+  return (
+    <div className="flex h-screen bg-doabunda-light font-sans">
+      {/* Sidebar Kiri */}
+      <div className="w-72 bg-doabunda-dark text-white p-6 flex flex-col justify-between shadow-2xl z-10">
+        <div>
+          <div className="text-center mb-10 pb-6 border-b border-white/10">
+            <h2 className="text-3xl font-black text-doabunda-gold tracking-widest">DOA BUNDA</h2>
+            <p className="text-xs text-white/60 tracking-widest mt-2 uppercase">Administrator Panel</p>
+          </div>
+          
+          <nav className="space-y-2">
+            <button className="flex items-center gap-4 w-full p-4 bg-doabunda-primary text-white rounded-xl font-bold shadow-md transition-all">
+              <LayoutDashboard size={22} />
+              <span>Ringkasan</span>
+            </button>
+            <button onClick={() => navigate('/kasir')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 hover:text-white rounded-xl font-medium transition-all group">
+              <MonitorSmartphone size={22} className="group-hover:text-doabunda-gold transition-colors" />
+              <span>Buka Mesin Kasir</span>
+            </button>
+            <button onClick={() => navigate('/kelola-menu')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 hover:text-white rounded-xl font-medium transition-all group">
+              <Utensils size={22} className="group-hover:text-doabunda-gold transition-colors" />
+              <span>Manajemen Menu</span>
+            </button>
+            <button onClick={() => navigate('/rekap')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 hover:text-white rounded-xl font-medium transition-all group">
+              <ClipboardList size={22} className="group-hover:text-doabunda-gold transition-colors" />
+              <span>Laporan Harian</span>
+            </button>
+            
+            {/* Tombol Baru: Buku Pengeluaran */}
+            <button onClick={() => navigate('/pengeluaran')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 hover:text-white rounded-xl font-medium transition-all group">
+              <Wallet size={22} className="group-hover:text-doabunda-gold transition-colors" />
+              <span>Buku Pengeluaran</span>
+            </button>
+
+            <button onClick={() => navigate('/manajemen-user')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 hover:text-white rounded-xl font-medium transition-all group">
+            <Users size={22} className="group-hover:text-doabunda-gold transition-colors" />
+                <span>Manajemen Karyawan</span>
+            </button>
+          </nav>
+        </div>
+
+        <button onClick={handleLogout} className="flex items-center gap-4 text-white/50 hover:text-white p-4 hover:bg-white/5 rounded-xl transition-all">
+          <LogOut size={22} />
+          <span className="font-medium">Keluar Sistem</span>
+        </button>
+      </div>
+
+      {/* Konten Utama */}
+      <div className="flex-1 p-10 overflow-y-auto">
+        <header className="flex justify-between items-center mb-10">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Ringkasan Bisnis</h1>
+            <p className="text-gray-500 mt-1">Pantau performa penjualan RM. Doa Bunda hari ini.</p>
+          </div>
+          <div className="bg-white px-6 py-3 rounded-xl shadow-sm border border-gray-100 font-bold text-doabunda-dark flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            Sistem Aktif
+          </div>
+        </header>
+
+        {/* Kartu Statistik */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <TrendingUp size={100} />
+            </div>
+            <div className="flex items-center gap-3 mb-4 text-gray-500">
+              <TrendingUp size={20} className="text-doabunda-primary" />
+              <h3 className="font-bold uppercase tracking-wider text-sm">Total Pendapatan</h3>
+            </div>
+            <h2 className="text-5xl font-black text-gray-800">Rp 0</h2>
+          </div>
+          
+          <div className="bg-gradient-to-br from-doabunda-gold to-[#d4b97a] p-8 rounded-2xl shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity text-doabunda-dark">
+              <Receipt size={100} />
+            </div>
+            <div className="flex items-center gap-3 mb-4 text-doabunda-dark/80">
+              <Receipt size={20} />
+              <h3 className="font-bold uppercase tracking-wider text-sm">Transaksi Hari Ini</h3>
+            </div>
+            <h2 className="text-5xl font-black text-doabunda-dark">0 <span className="text-2xl font-medium opacity-80">Nota</span></h2>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;

@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-doabunda-dark: #7D0A0A;
+  --color-doabunda-primary: #BF3131;
+  --color-doabunda-gold: #EAD196;
+  --color-doabunda-light: #EEEEEE;
+}
+
+body {
+  background-color: var(--color-doabunda-light);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}
