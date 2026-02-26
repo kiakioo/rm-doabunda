@@ -19,7 +19,7 @@ const Login = () => {
 
     try {
       // Pastikan URL ini sesuai dengan port backend Anda (5000)
-      const response = await axios.post('http://localhost:5000/api/auth/login', { username, password });
+      const response = await axios.post('import.meta.env.VITE_API_URL', { username, password });
       
       // Simpan data sesi
       localStorage.setItem('token', response.data.token);
