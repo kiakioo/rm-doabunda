@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 // Penambahan import ikon Wallet untuk tombol Buku Pengeluaran
 import { LayoutDashboard, Utensils, ClipboardList, LogOut, TrendingUp, MonitorSmartphone, Receipt, Users, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({ totalRevenue: 0, totalTransactions: 0 });

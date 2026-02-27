@@ -4,6 +4,7 @@ import { useCartStore } from '../store/cartStore';
 import { ShoppingCart, Trash2, CreditCard, Wallet, Truck, Search, ChevronLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
 
 const Kasir = () => {
   const [menus, setMenus] = useState([]);

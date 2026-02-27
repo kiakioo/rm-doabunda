@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 // Menambahkan icon Eye dan EyeOff untuk fitur lihat password
 import { LogIn, User, Lock, Eye, EyeOff } from 'lucide-react';
 import Swal from 'sweetalert2';
+import Layout from '../components/Layout';
 
 const Login = () => {
   const [username, setUsername] = useState('');

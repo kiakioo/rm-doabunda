@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Users, UserPlus, Trash2, Shield, User } from 'lucide-react';
 import Swal from 'sweetalert2';
+import Layout from '../components/Layout';
 
 const ManajemenUser = () => {
   const [users, setUsers] = useState([]);

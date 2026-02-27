@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import Layout from '../components/Layout';
 
 const KelolaMenu = () => {
   const [menus, setMenus] = useState([]);

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, CalendarCheck, FileText, Lock, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
 import Swal from 'sweetalert2';
+import Layout from '../components/Layout';
 
 const RekapHarian = () => {
   const [history, setHistory] = useState([]);

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, Receipt, Plus, Trash2, TrendingDown } from 'lucide-react';
 import Swal from 'sweetalert2';
+import Layout from '../components/Layout';
 
 const Pengeluaran = () => {
   const [expenses, setExpenses] = useState([]);
