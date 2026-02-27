@@ -1,18 +1,24 @@
 import axios from 'axios';
 
-// Mengambil URL dari Environment Variable Vercel (VITE_API_URL)
-// Jika sedang di komputer lokal dan variabel tidak ada, otomatis pakai localhost:5000
+// Pastikan tidak ada double slash di URL
+const getBaseURL = () => {
+    const url = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    return url.endsWith('/') ? url.slice(0, -1) : url;
+};
+
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api`,
+    baseURL: `${getBaseURL()}/api`,
 });
 
-// Interceptor: Otomatis menempelkan token keamanan di setiap request
+// Interceptor untuk memastikan Token JWT selalu ikut di setiap input data
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
 });
 
 export default api;
