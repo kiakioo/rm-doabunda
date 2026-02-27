@@ -154,7 +154,7 @@ const Login = () => {
           </button>
         </form>
         <div className="bg-gray-50 p-4 text-center text-xs text-gray-500 font-medium border-t border-gray-100">
-          &copy; 2024 RM. Doa Bunda IT Division
+          &copy; 2026 RM. Doa Bunda by Ashfa
         </div>
       </div>
     </div>
