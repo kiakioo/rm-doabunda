@@ -1,17 +1,21 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const db = require('../utils/db'); // Kita panggil DB langsung seperti di userController
 require('dotenv').config();
 
 const login = async (req, res) => {
     try {
         const { username, password } = req.body;
         
-        // 1. Cek apakah user ada di database
-        const user = await User.findByUsername(username);
-        if (!user) {
+        // 1. Ambil data langsung dari database (Dijamin bawa kolom password)
+        const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        
+        // Jika array users kosong (username tidak ada)
+        if (users.length === 0) {
             return res.status(404).json({ message: 'Username tidak ditemukan!' });
         }
+
+        const user = users[0]; // Ambil data user pertama yang cocok
 
         // 2. Cek apakah password cocok
         const isMatch = await bcrypt.compare(password, user.password);
@@ -20,9 +24,11 @@ const login = async (req, res) => {
         }
 
         // 3. Buat Token JWT (Berlaku 1 Hari)
+        // Gunakan nilai default rahasia jika JWT_SECRET di .env tidak terbaca
+        const secretKey = process.env.JWT_SECRET || 'rahasia_doa_bunda_123';
         const token = jwt.sign(
             { id: user.id, role: user.role },
-            process.env.JWT_SECRET,
+            secretKey,
             { expiresIn: '1d' }
         );
 
