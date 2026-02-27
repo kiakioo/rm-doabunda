@@ -34,4 +34,5 @@ app.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`🚀 Server POS berjalan di port ${PORT}`);
     console.log(`=========================================`);
+module.exports = app;
 });
