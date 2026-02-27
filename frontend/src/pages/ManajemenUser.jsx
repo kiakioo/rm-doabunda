@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
 import api from '../services/api';
 
@@ -85,16 +84,14 @@ const ManajemenUser = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <button
-        onClick={() => navigate('/dashboard')}
-        className="flex items-center gap-2 mb-6 text-red-800 font-semibold"
+        onClick={() => navigate('/admin')}
+        className="mb-6 text-red-800 font-semibold"
       >
-        <ChevronLeft size={20} />
-        Kembali ke Dashboard
+        ← Kembali ke Dashboard
       </button>
 
       <div className="grid md:grid-cols-2 gap-8">
 
-        {/* FORM TAMBAH USER */}
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-bold mb-4">Tambah Karyawan</h2>
 
@@ -148,7 +145,6 @@ const ManajemenUser = () => {
           </form>
         </div>
 
-        {/* LIST USER */}
         <div className="bg-white p-6 rounded-xl shadow">
           <h2 className="text-xl font-bold mb-4">Daftar Karyawan</h2>
 
