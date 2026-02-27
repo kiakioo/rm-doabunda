@@ -29,92 +29,93 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-doabunda-light font-sans">
+    <div className="flex flex-col md:flex-row min-h-screen bg-doabunda-light font-sans">
 
-      {/* SIDEBAR */}
-      <div className="w-72 bg-doabunda-dark text-white p-6 flex flex-col justify-between shadow-2xl">
+      {/* SIDEBAR: Di HP jadi menu atas, di Laptop jadi menu samping */}
+      <div className="w-full md:w-72 bg-doabunda-dark text-white p-4 md:p-6 flex flex-col justify-between shadow-2xl md:sticky md:top-0 md:h-screen z-20">
 
         <div>
-          <div className="text-center mb-10 pb-6 border-b border-white/10">
-            <h2 className="text-3xl font-black text-doabunda-gold tracking-widest">
+          <div className="text-center mb-6 md:mb-10 pb-4 md:pb-6 border-b border-white/10">
+            <h2 className="text-2xl md:text-3xl font-black text-doabunda-gold tracking-widest">
               DOA BUNDA
             </h2>
-            <p className="text-xs text-white/60 tracking-widest mt-2 uppercase">
+            <p className="text-[10px] md:text-xs text-white/60 tracking-widest mt-1 md:mt-2 uppercase">
               Administrator Panel
             </p>
           </div>
 
-          <nav className="space-y-2">
+          {/* Grid agar di HP menu sejajar 2 baris, di laptop menurun */}
+          <nav className="grid grid-cols-2 md:grid-cols-1 gap-2 md:space-y-2">
 
-            <button className="flex items-center gap-4 w-full p-4 bg-doabunda-primary rounded-xl font-bold">
-              <LayoutDashboard size={22} />
-              Ringkasan
+            <button className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 md:gap-4 w-full p-3 md:p-4 bg-doabunda-primary rounded-xl font-bold text-xs md:text-base text-center md:text-left">
+              <LayoutDashboard size={20} className="md:w-[22px] md:h-[22px]" />
+              <span>Ringkasan</span>
             </button>
 
-            <button onClick={() => navigate('/kasir')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 rounded-xl">
-              <MonitorSmartphone size={22} />
-              Buka Mesin Kasir
+            <button onClick={() => navigate('/kasir')} className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 md:gap-4 w-full p-3 md:p-4 text-white/70 hover:bg-white/5 rounded-xl text-xs md:text-base text-center md:text-left">
+              <MonitorSmartphone size={20} className="md:w-[22px] md:h-[22px]" />
+              <span>Buka Kasir</span>
             </button>
 
-            <button onClick={() => navigate('/kelola-menu')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 rounded-xl">
-              <Utensils size={22} />
-              Manajemen Menu
+            <button onClick={() => navigate('/kelola-menu')} className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 md:gap-4 w-full p-3 md:p-4 text-white/70 hover:bg-white/5 rounded-xl text-xs md:text-base text-center md:text-left">
+              <Utensils size={20} className="md:w-[22px] md:h-[22px]" />
+              <span>Menu</span>
             </button>
 
-            <button onClick={() => navigate('/rekap')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 rounded-xl">
-              <ClipboardList size={22} />
-              Laporan Harian
+            <button onClick={() => navigate('/rekap')} className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 md:gap-4 w-full p-3 md:p-4 text-white/70 hover:bg-white/5 rounded-xl text-xs md:text-base text-center md:text-left">
+              <ClipboardList size={20} className="md:w-[22px] md:h-[22px]" />
+              <span>Laporan</span>
             </button>
 
-            <button onClick={() => navigate('/pengeluaran')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 rounded-xl">
-              <Wallet size={22} />
-              Buku Pengeluaran
+            <button onClick={() => navigate('/pengeluaran')} className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 md:gap-4 w-full p-3 md:p-4 text-white/70 hover:bg-white/5 rounded-xl text-xs md:text-base text-center md:text-left">
+              <Wallet size={20} className="md:w-[22px] md:h-[22px]" />
+              <span>Pengeluaran</span>
             </button>
 
-            <button onClick={() => navigate('/manajemen-user')} className="flex items-center gap-4 w-full p-4 text-white/70 hover:bg-white/5 rounded-xl">
-              <Users size={22} />
-              Manajemen Karyawan
+            <button onClick={() => navigate('/manajemen-user')} className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-2 md:gap-4 w-full p-3 md:p-4 text-white/70 hover:bg-white/5 rounded-xl text-xs md:text-base text-center md:text-left">
+              <Users size={20} className="md:w-[22px] md:h-[22px]" />
+              <span>Karyawan</span>
             </button>
 
           </nav>
         </div>
 
-        <button onClick={handleLogout} className="flex items-center gap-4 text-white/50 hover:text-white p-4">
-          <LogOut size={22} />
-          Keluar
+        <button onClick={handleLogout} className="flex items-center justify-center md:justify-start gap-3 text-white/50 hover:text-white p-4 mt-6 md:mt-0 bg-white/5 md:bg-transparent rounded-xl md:rounded-none">
+          <LogOut size={20} />
+          <span className="font-bold md:font-normal">Keluar</span>
         </button>
       </div>
 
       {/* CONTENT */}
-      <div className="flex-1 p-10 overflow-y-auto">
+      <div className="flex-1 p-5 md:p-10 overflow-y-auto">
 
-        <header className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-800">
+        <header className="mb-8 md:mb-10 text-center md:text-left">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
             Ringkasan Bisnis
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-sm md:text-base text-gray-500 mt-1">
             Pantau performa penjualan hari ini.
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
 
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-            <div className="flex items-center gap-3 mb-4 text-gray-500">
+          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-center text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-4 text-gray-500">
               <TrendingUp size={20} className="text-doabunda-primary" />
-              <h3 className="font-bold uppercase text-sm">
+              <h3 className="font-bold uppercase text-xs md:text-sm">
                 Total Pendapatan
               </h3>
             </div>
-            <h2 className="text-5xl font-black text-gray-800">
+            <h2 className="text-3xl md:text-5xl lg:text-4xl xl:text-5xl font-black text-gray-800 break-words">
               Rp {stats.totalRevenue.toLocaleString('id-ID')}
             </h2>
           </div>
 
-          <div className="bg-gradient-to-br from-doabunda-gold to-[#d4b97a] p-8 rounded-2xl shadow-sm">
-            <div className="flex items-center gap-3 mb-4 text-doabunda-dark/80">
+          <div className="bg-gradient-to-br from-doabunda-gold to-[#d4b97a] p-6 md:p-8 rounded-2xl shadow-sm flex flex-col justify-center text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-4 text-doabunda-dark/80">
               <Receipt size={20} />
-              <h3 className="font-bold uppercase text-sm">
+              <h3 className="font-bold uppercase text-xs md:text-sm">
                 Transaksi Hari Ini
               </h3>
             </div>

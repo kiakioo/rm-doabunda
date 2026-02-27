@@ -82,18 +82,19 @@ const ManajemenUser = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <button
         onClick={() => navigate('/admin')}
-        className="mb-6 text-red-800 font-semibold"
+        className="mb-6 text-red-800 font-semibold hover:underline text-sm md:text-base"
       >
         ← Kembali ke Dashboard
       </button>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
 
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-bold mb-4">Tambah Karyawan</h2>
+        {/* Form Tambah Karyawan */}
+        <div className="bg-white p-5 md:p-6 rounded-2xl md:rounded-xl shadow border border-gray-100 h-fit">
+          <h2 className="text-lg md:text-xl font-bold mb-4 md:mb-6 text-gray-800">Tambah Karyawan Baru</h2>
 
           <form onSubmit={handleAddUser} className="space-y-4">
             <input
@@ -103,7 +104,7 @@ const ManajemenUser = () => {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full p-3 border rounded"
+              className="w-full p-3 md:p-4 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-red-800"
             />
 
             <input
@@ -113,7 +114,7 @@ const ManajemenUser = () => {
               value={formData.username}
               onChange={handleChange}
               required
-              className="w-full p-3 border rounded"
+              className="w-full p-3 md:p-4 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-red-800"
             />
 
             <input
@@ -123,14 +124,14 @@ const ManajemenUser = () => {
               value={formData.password}
               onChange={handleChange}
               required
-              className="w-full p-3 border rounded"
+              className="w-full p-3 md:p-4 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-red-800"
             />
 
             <select
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full p-3 border rounded"
+              className="w-full p-3 md:p-4 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-red-800"
             >
               <option value="kasir">Kasir</option>
               <option value="admin">Admin</option>
@@ -138,32 +139,36 @@ const ManajemenUser = () => {
 
             <button
               type="submit"
-              className="w-full bg-red-800 text-white py-3 rounded font-bold"
+              className="w-full bg-red-800 hover:bg-red-900 transition-colors text-white py-3 md:py-4 rounded-xl font-bold text-sm md:text-base mt-2"
             >
-              Simpan User
+              Simpan Data Karyawan
             </button>
           </form>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-bold mb-4">Daftar Karyawan</h2>
+        {/* Daftar Karyawan */}
+        <div className="bg-white p-5 md:p-6 rounded-2xl md:rounded-xl shadow border border-gray-100">
+          <h2 className="text-lg md:text-xl font-bold mb-4 md:mb-6 text-gray-800">Daftar Karyawan</h2>
 
           <div className="space-y-3">
             {users.map((user) => (
               <div
                 key={user.id}
-                className="flex justify-between items-center p-3 border rounded"
+                className="flex justify-between items-center p-4 bg-gray-50 border border-gray-100 rounded-xl hover:shadow-sm transition-shadow"
               >
                 <div>
-                  <p className="font-semibold">{user.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {user.username} • {user.role}
-                  </p>
+                  <p className="font-bold text-gray-800 text-sm md:text-base">{user.name}</p>
+                  <div className="flex gap-2 items-center mt-1">
+                    <p className="text-xs text-gray-500">{user.username}</p>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 uppercase">
+                      {user.role}
+                    </span>
+                  </div>
                 </div>
 
                 <button
                   onClick={() => handleDelete(user.id)}
-                  className="text-red-600 font-semibold"
+                  className="text-red-500 hover:bg-red-50 hover:text-red-600 font-bold px-3 py-2 rounded-lg text-xs md:text-sm transition-colors"
                 >
                   Hapus
                 </button>

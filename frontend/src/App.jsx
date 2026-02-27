@@ -9,25 +9,100 @@ import RekapHarian from './pages/RekapHarian';
 import ManajemenUser from './pages/ManajemenUser';
 import Pengeluaran from './pages/Pengeluaran';
 
+// 🔒 Cek Login
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/" />;
+};
+
+// 🔐 Cek Role
+const RoleRoute = ({ children, allowedRoles }) => {
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  if (!user) return <Navigate to="/" />;
+
+  return allowedRoles.includes(user.role)
+    ? children
+    : <Navigate to="/kasir" />;
 };
 
 function App() {
   return (
     <Router>
       <Routes>
+
         <Route path="/" element={<Login />} />
-        
-        <Route path="/kasir" element={<PrivateRoute><Kasir /></PrivateRoute>} />
-        <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
-        <Route path="/kelola-menu" element={<PrivateRoute><KelolaMenu /></PrivateRoute>} />
-        <Route path="/rekap" element={<PrivateRoute><RekapHarian /></PrivateRoute>} />
-        <Route path="/manajemen-user" element={<PrivateRoute><ManajemenUser /></PrivateRoute>} />
-        <Route path="/pengeluaran" element={<PrivateRoute><Pengeluaran /></PrivateRoute>} />
-        
+
+        {/* KASIR + ADMIN */}
+        <Route 
+          path="/kasir" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin', 'kasir']}>
+                <Kasir />
+              </RoleRoute>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/kelola-menu" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin', 'kasir']}>
+                <KelolaMenu />
+              </RoleRoute>
+            </PrivateRoute>
+          } 
+        />
+
+        {/* ADMIN ONLY */}
+        <Route 
+          path="/admin" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin']}>
+                <AdminDashboard />
+              </RoleRoute>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/rekap" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin']}>
+                <RekapHarian />
+              </RoleRoute>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/manajemen-user" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin']}>
+                <ManajemenUser />
+              </RoleRoute>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/pengeluaran" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin']}>
+                <Pengeluaran />
+              </RoleRoute>
+            </PrivateRoute>
+          } 
+        />
+
         <Route path="*" element={<Navigate to="/" />} />
+
       </Routes>
     </Router>
   );
