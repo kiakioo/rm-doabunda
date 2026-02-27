@@ -4,7 +4,11 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(cors()); // Mengizinkan frontend React mengakses backend
+app.use(cors({
+    origin: '*', // Untuk tahap awal agar lancar, atau ganti dengan URL frontend Vercel kamu
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json()); // Membaca format JSON dari frontend
 
 app.get('/', (req, res) => {
@@ -34,5 +38,6 @@ app.listen(PORT, () => {
     console.log(`=========================================`);
     console.log(`🚀 Server POS berjalan di port ${PORT}`);
     console.log(`=========================================`);
-module.exports = app;
 });
+
+module.exports = app;
