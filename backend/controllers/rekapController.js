@@ -91,7 +91,6 @@ const getRecapHistory = async (req, res) => {
     try {
         const today = new Date().toISOString().slice(0, 10);
 
-        // ✅ DISESUAIKAN DENGAN DB (PAKAI KOLOM total)
         const [revenueResult] = await db.query(
             `SELECT 
                 IFNULL(SUM(total), 0) as totalRevenue,
@@ -101,25 +100,23 @@ const getRecapHistory = async (req, res) => {
             [today]
         );
 
-        const totalRevenue = parseFloat(revenueResult[0]?.totalRevenue) || 0;
-        const totalTransactions = revenueResult[0]?.totalTransactions || 0;
+        const totalRevenue = parseFloat(revenueResult[0].totalRevenue) || 0;
+        const totalTransactions = revenueResult[0].totalTransactions || 0;
 
-        const history = await Rekap.getHistory();
 
         res.json({
             totalRevenue,
             totalTransactions,
-            data: history
+            data: []  // sementara kosong
         });
 
     } catch (error) {
-        console.error("Get recap history error:", error);
+        console.error("SUMMARY ERROR:", error);
         res.status(500).json({
             message: 'Gagal mengambil histori rekap'
         });
     }
 };
-
 module.exports = {
     generateDailyRecap,
     getRecapHistory
