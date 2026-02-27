@@ -12,13 +12,17 @@ const ManajemenUser = () => {
   const token = localStorage.getItem('token');
   const currentUser = JSON.parse(localStorage.getItem('user'));
 
+  // KUNCI PERUBAHAN: Membuat URL API menjadi dinamis
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/users', {
+      // Menggunakan API_URL
+      const res = await axios.get(`${API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data.data);
@@ -30,7 +34,8 @@ const ManajemenUser = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/users', formData, {
+      // Menggunakan API_URL
+      await axios.post(`${API_URL}/api/users`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Pengguna baru telah ditambahkan.', confirmButtonColor: '#7D0A0A' });
@@ -57,7 +62,8 @@ const ManajemenUser = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:5000/api/users/${id}`, {
+          // Menggunakan API_URL
+          await axios.delete(`${API_URL}/api/users/${id}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           Swal.fire({ icon: 'success', title: 'Terhapus!', text: 'Akun telah dihapus.', confirmButtonColor: '#7D0A0A' });
@@ -154,7 +160,7 @@ const ManajemenUser = () => {
                         )}
                       </td>
                       <td className="p-5 text-center">
-                        {user.id !== currentUser.id && (
+                        {user.id !== currentUser?.id && (
                           <button onClick={() => handleDelete(user.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Hapus Pengguna">
                             <Trash2 size={18} />
                           </button>
