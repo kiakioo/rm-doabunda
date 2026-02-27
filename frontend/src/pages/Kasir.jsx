@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import api from '../services/api';
+import axios from 'axios';
 import { useCartStore } from '../store/cartStore';
 import { ShoppingCart, Trash2, CreditCard, Wallet, Truck, Search, ChevronLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
+import Layout from '../components/Layout';
 
 const Kasir = () => {
   const [menus, setMenus] = useState([]);
@@ -17,7 +18,10 @@ const Kasir = () => {
 
   const fetchMenus = async () => {
     try {
-      const res = await api.get('/menus');
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/menus', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setMenus(res.data.data);
     } catch (error) {
       console.error("Gagal mengambil menu", error);
@@ -35,13 +39,16 @@ const Kasir = () => {
     }
     
     try {
+      const token = localStorage.getItem('token');
       const payload = {
         payment_method: method,
         source: method === 'Grab' ? 'GrabFood' : 'POS',
         items: cart.map(item => ({ menu_id: item.id, qty: item.qty, price: item.price }))
       };
 
-      await api.post('/transactions/checkout', payload);
+      await axios.post('http://localhost:5000/api/transactions/checkout', payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
       Swal.fire({
         icon: 'success',
@@ -63,7 +70,9 @@ const Kasir = () => {
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+      {/* KIRI: Area Daftar Menu */}
       <div className="w-2/3 flex flex-col">
+        {/* Header Kasir */}
         <div className="bg-white p-6 border-b border-gray-200 flex justify-between items-center shadow-sm z-10">
           <div className="flex items-center gap-4">
             <button onClick={() => navigate('/admin')} className="p-2 text-gray-400 hover:text-doabunda-dark hover:bg-gray-100 rounded-full transition-colors">
@@ -86,6 +95,7 @@ const Kasir = () => {
           </div>
         </div>
 
+        {/* Grid Menu */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="grid grid-cols-3 gap-6">
             {menus.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase())).map((menu) => (
@@ -101,21 +111,30 @@ const Kasir = () => {
                 <p className="text-doabunda-primary font-bold text-lg">Rp {Number(menu.price).toLocaleString('id-ID')}</p>
               </button>
             ))}
+            
+            {menus.length === 0 && (
+               <div className="col-span-3 text-center py-20 text-gray-400">
+                 <p>Belum ada menu yang tersedia.</p>
+               </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* KANAN: Panel Pesanan (Cart) */}
       <div className="w-1/3 bg-white shadow-[-10px_0_30px_rgba(0,0,0,0.03)] flex flex-col z-20 border-l border-gray-200">
+        {/* Header Cart */}
         <div className="p-6 border-b border-gray-100 flex justify-between items-center">
           <div className="flex items-center gap-3 text-doabunda-dark">
             <ShoppingCart size={24} />
             <h2 className="text-lg font-bold">Pesanan Saat Ini</h2>
           </div>
-          <button onClick={clearCart} className="text-gray-400 hover:text-red-500 transition-colors p-2">
+          <button onClick={clearCart} className="text-gray-400 hover:text-red-500 transition-colors p-2" title="Kosongkan Keranjang">
             <Trash2 size={20}/>
           </button>
         </div>
 
+        {/* Daftar Item Cart */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-50 space-y-4">
@@ -135,23 +154,25 @@ const Kasir = () => {
           )}
         </div>
 
+        {/* Panel Checkout */}
         <div className="p-6 bg-gray-50 border-t border-gray-200">
           <div className="flex justify-between items-end mb-6">
             <span className="text-sm font-bold text-gray-500 uppercase tracking-widest">Total Tagihan</span>
             <span className="text-3xl font-black text-doabunda-dark">Rp {getTotal().toLocaleString('id-ID')}</span>
           </div>
 
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Pilih Metode Pembayaran</p>
           <div className="grid grid-cols-3 gap-3">
-            <button onClick={() => handleCheckout('Cash')} className="flex flex-col items-center justify-center bg-white border-2 border-green-600 text-green-700 py-4 rounded-xl hover:bg-green-600 hover:text-white transition-all active:scale-95 font-bold shadow-sm">
-              <Wallet size={24} className="mb-2" />
+            <button onClick={() => handleCheckout('Cash')} className="flex flex-col items-center justify-center bg-white border-2 border-green-600 text-green-700 py-4 rounded-xl hover:bg-green-600 hover:text-white transition-all active:scale-95 font-bold shadow-sm group">
+              <Wallet size={24} className="mb-2 group-hover:scale-110 transition-transform" />
               <span className="text-xs tracking-wider">CASH</span>
             </button>
-            <button onClick={() => handleCheckout('QRIS')} className="flex flex-col items-center justify-center bg-white border-2 border-blue-600 text-blue-700 py-4 rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-95 font-bold shadow-sm">
-              <CreditCard size={24} className="mb-2" />
+            <button onClick={() => handleCheckout('QRIS')} className="flex flex-col items-center justify-center bg-white border-2 border-blue-600 text-blue-700 py-4 rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-95 font-bold shadow-sm group">
+              <CreditCard size={24} className="mb-2 group-hover:scale-110 transition-transform" />
               <span className="text-xs tracking-wider">QRIS</span>
             </button>
-            <button onClick={() => handleCheckout('Grab')} className="flex flex-col items-center justify-center bg-doabunda-dark text-white py-4 rounded-xl hover:bg-doabunda-primary transition-all active:scale-95 font-bold shadow-sm border-2 border-doabunda-dark">
-              <Truck size={24} className="mb-2" />
+            <button onClick={() => handleCheckout('Grab')} className="flex flex-col items-center justify-center bg-doabunda-dark text-white py-4 rounded-xl hover:bg-doabunda-primary transition-all active:scale-95 font-bold shadow-sm border-2 border-doabunda-dark group">
+              <Truck size={24} className="mb-2 group-hover:scale-110 transition-transform" />
               <span className="text-xs tracking-wider">GRAB</span>
             </button>
           </div>
