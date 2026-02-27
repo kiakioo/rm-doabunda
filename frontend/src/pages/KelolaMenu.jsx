@@ -1,31 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Plus, Pencil, Trash2, ArrowLeft } from 'lucide-react';
+import api from '../services/api';
+import { Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import Layout from '../components/Layout';
 
 const KelolaMenu = () => {
   const [menus, setMenus] = useState([]);
   const [form, setForm] = useState({ name: '', category: 'Makanan', price: '' });
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
 
   useEffect(() => { fetchMenus(); }, []);
 
   const fetchMenus = async () => {
-    const res = await axios.get('http://localhost:5000/api/menus', { headers: { Authorization: `Bearer ${token}` } });
-    setMenus(res.data.data);
+    try {
+      const res = await api.get('/menus');
+      setMenus(res.data.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/menus', form, { headers: { Authorization: `Bearer ${token}` } });
+      await api.post('/menus', form);
       Swal.fire('Berhasil!', 'Menu ditambahkan', 'success');
       setForm({ name: '', category: 'Makanan', price: '' });
       fetchMenus();
-    } catch (err) { Swal.fire('Gagal!', 'Cek akses admin Anda', 'error'); }
+    } catch (err) {
+      Swal.fire('Gagal!', 'Terjadi kesalahan sistem', 'error');
+    }
   };
 
   const deleteMenu = async (id) => {
@@ -33,8 +37,12 @@ const KelolaMenu = () => {
       title: 'Hapus menu?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#BF3131', confirmButtonText: 'Ya, Hapus!'
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await axios.delete(`http://localhost:5000/api/menus/${id}`, { headers: { Authorization: `Bearer ${token}` } });
-        fetchMenus();
+        try {
+          await api.delete(`/menus/${id}`);
+          fetchMenus();
+        } catch (err) {
+          Swal.fire('Gagal!', 'Gagal menghapus menu', 'error');
+        }
       }
     });
   };
@@ -46,11 +54,10 @@ const KelolaMenu = () => {
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Form Tambah Menu */}
         <div className="bg-white p-6 rounded-3xl shadow-xl h-fit border-t-8 border-doabunda-primary">
           <h2 className="text-xl font-black text-doabunda-dark mb-4 uppercase">Tambah Menu Baru</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input type="text" placeholder="Nama Menu (Contoh: Rendang)" className="w-full p-3 border rounded-xl outline-doabunda-primary" 
+            <input type="text" placeholder="Nama Menu" className="w-full p-3 border rounded-xl outline-doabunda-primary" 
               value={form.name} onChange={e => setForm({...form, name: e.target.value})} required />
             <select className="w-full p-3 border rounded-xl outline-doabunda-primary" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
               <option value="Makanan">Makanan</option>
@@ -62,7 +69,6 @@ const KelolaMenu = () => {
           </form>
         </div>
 
-        {/* Tabel Daftar Menu */}
         <div className="md:col-span-2 bg-white rounded-3xl shadow-xl overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-doabunda-dark text-doabunda-gold uppercase text-sm">

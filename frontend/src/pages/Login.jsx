@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../services/api'; // Menggunakan pusat koneksi API agar otomatis menyesuaikan URL Vercel/Local
 import { useNavigate } from 'react-router-dom';
 // Menambahkan icon Eye dan EyeOff untuk fitur lihat password
 import { LogIn, User, Lock, Eye, EyeOff } from 'lucide-react';
@@ -19,8 +19,9 @@ const Login = () => {
     setIsLoading(true); // Mulai loading
 
     try {
-      // Pastikan URL ini sesuai dengan port backend Anda (5000)
-  const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { username, password });      
+      // Menggunakan instance 'api' agar tidak perlu menulis URL manual lagi
+      const response = await api.post('/auth/login', { username, password });      
+      
       // Simpan data sesi
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -44,17 +45,16 @@ const Login = () => {
 
     } catch (error) {
       // --- BAGIAN PENTING UNTUK DEBUGGING ---
-      // Ini akan mencetak error lengkap ke Console Browser (Tekan F12)
       console.error("🔥 DETAIL ERROR LOGIN:", error);
 
       let errorMessage = 'Terjadi kesalahan pada server.';
       
       // Cek jenis errornya
       if (error.response) {
-        // Server merespon tapi dengan status error (misal: 400 password salah, 404 username tidak ada)
+        // Server merespon tapi dengan status error
         errorMessage = error.response.data.message || 'Login gagal. Periksa kembali data Anda.';
       } else if (error.request) {
-        // Request terkirim tapi tidak ada respon (Backend MATI atau port salah)
+        // Request terkirim tapi tidak ada respon (Backend MATI/Masalah jaringan)
         errorMessage = 'Tidak dapat terhubung ke server. Silakan periksa koneksi internet Anda.';
       }
 
