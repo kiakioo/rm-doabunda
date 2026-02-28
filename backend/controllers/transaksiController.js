@@ -1,30 +1,37 @@
 const db = require('../utils/db');
 
-// ==========================
-// CHECKOUT
-// ==========================
-const checkoutTransaction = async (req, res) => {
+const checkoutTransaction = async (req, res, next) => {
   const connection = await db.getConnection();
+
   try {
     await connection.beginTransaction();
 
     const userId = req.user.id;
     const { payment_method, source, items } = req.body;
 
+    if (!items || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Keranjang kosong'
+      });
+    }
+
     const totalAmount = items.reduce(
       (sum, item) => sum + (item.price * item.qty),
       0
     );
 
+    // Insert ke tabel transactions
     const [trxResult] = await connection.query(
       `INSERT INTO transactions 
-       (user_id, payment_method, source, total_amount) 
+       (user_id, payment_method, source, total_amount)
        VALUES (?, ?, ?, ?)`,
       [userId, payment_method, source || 'POS', totalAmount]
     );
 
     const transactionId = trxResult.insertId;
 
+    // Insert ke transaction_items
     for (const item of items) {
       await connection.query(
         `INSERT INTO transaction_items 
@@ -36,21 +43,21 @@ const checkoutTransaction = async (req, res) => {
 
     await connection.commit();
 
-    res.json({ message: 'Transaksi berhasil', transactionId });
+    res.json({
+      success: true,
+      message: 'Transaksi berhasil',
+      transaction_id: transactionId
+    });
 
   } catch (error) {
     await connection.rollback();
-    console.error(error);
-    res.status(500).json({ message: 'Gagal memproses transaksi' });
+    next(error);
   } finally {
     connection.release();
   }
 };
 
-// ==========================
-// HISTORY
-// ==========================
-const getTransactions = async (req, res) => {
+const getTransactions = async (req, res, next) => {
   try {
     const { date } = req.query;
     const user = req.user;
@@ -89,12 +96,17 @@ const getTransactions = async (req, res) => {
 
     const [rows] = await db.query(query, params);
 
-    res.json({ data: rows });
+    res.json({
+      success: true,
+      data: rows
+    });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Gagal mengambil history transaksi' });
+    next(error);
   }
 };
 
-module.exports = { checkoutTransaction, getTransactions };
+module.exports = {
+  checkoutTransaction,
+  getTransactions
+};
