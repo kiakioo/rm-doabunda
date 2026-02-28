@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "description": "Backend POS RM Doa Bunda",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
