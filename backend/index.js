@@ -5,7 +5,7 @@ require('dotenv').config();
 const app = express();
 
 app.use(cors({
-    origin: ['https://rm-doabunda1.vercel.app', 'http://localhost:5173', 'http://localhost:3000'], // Izinkan frontend production & lokal
+    origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
