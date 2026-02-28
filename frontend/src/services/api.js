@@ -1,22 +1,12 @@
-// frontend/src/services/api.js
 import axios from 'axios';
 
-const getBaseURL = () => {
-  const envUrl = import.meta.env.VITE_API_URL;
-
-  // 🔥 Jika di production Vercel dan belum set env, pakai backend project langsung
-  if (import.meta.env.PROD) {
-    const prodURL = envUrl || 'https://rm-doabunda.vercel.app';
-    return prodURL.endsWith('/') ? prodURL.slice(0, -1) : prodURL;
-  }
-
-  // Local development
-  const localURL = envUrl || 'http://localhost:5000';
-  return localURL.endsWith('/') ? localURL.slice(0, -1) : localURL;
-};
+const BASE_URL =
+  import.meta.env.MODE === 'development'
+    ? 'http://localhost:5000'
+    : 'https://rm-doabunda.vercel.app';
 
 const api = axios.create({
-  baseURL: `${getBaseURL()}/api`,
+  baseURL: `${BASE_URL}/api`,
   timeout: 10000
 });
 
@@ -33,7 +23,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Logging error rapi
+// Logging error
 api.interceptors.response.use(
   (response) => response,
   (error) => {
