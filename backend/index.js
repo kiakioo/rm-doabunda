@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const app = require('../index.js');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -8,23 +8,31 @@ const app = express();
 app.use(cors({
     origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-allowedHeaders: '*'
+allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.json({ 
-        message: 'API RM DOA BUNDA Berjalan Lancar!',
-        database_status: process.env.DB_HOST ? 'Terhubung (Environment Variables Terbaca)' : 'KOSONG (Cek brankas Vercel!)'
+  res.json({ 
+    message: 'API RM DOA BUNDA Berjalan!',
+    status: 'Online',
+    time: new Date().toISOString()
     });
 });
 
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/menus', require('./routes/menuRoutes'));
-app.use('/api/transactions', require('./routes/transaksiRoutes'));
-app.use('/api/rekap', require('./routes/rekapRoutes'));
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/expenses', require('./routes/expenseRoutes'));
+const authRoutes = require(path.resolve(__dirname, 'routes/authRoutes'));
+const menuRoutes = require(path.resolve(__dirname, 'routes/menuRoutes'));
+const transaksiRoutes = require(path.resolve(__dirname, 'routes/transaksiRoutes'));
+const rekapRoutes = require(path.resolve(__dirname, 'routes/rekapRoutes'));
+const userRoutes = require(path.resolve(__dirname, 'routes/userRoutes'));
+const expenseRoutes = require(path.resolve(__dirname, 'routes/expenseRoutes'));
+
+app.use('/api/auth', authRoutes);
+app.use('/api/menus', menuRoutes);
+app.use('/api/transactions', transaksiRoutes);
+app.use('/api/rekap', rekapRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/expenses', expenseRoutes);
 
 app.use((err, req, res, next) => {
     console.error("Backend Error Terdeteksi:", err);
@@ -34,5 +42,10 @@ app.use((err, req, res, next) => {
 app.use('*', (req, res) => {
     res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
 });
+
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
 
 module.exports = app;
