@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL 
+export const API_URL = import.meta.env.VITE_API_URL 
     ? `${import.meta.env.VITE_API_URL}/api` 
     : 'https://rm-doabunda.vercel.app/api';
 
@@ -22,17 +22,5 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Logging error
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error(
-      '[API ERROR]',
-      error?.response?.status,
-      error?.response?.data || error.message
-    );
-    return Promise.reject(error);
-  }
-);
 
 export default api;
