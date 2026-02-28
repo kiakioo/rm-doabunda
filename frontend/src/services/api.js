@@ -2,12 +2,12 @@ import axios from 'axios';
 
 const BASE_URL =
   import.meta.env.MODE === 'development'
-    ? 'http://localhost:5000'
-    : 'https://rm-doabunda.vercel.app';
+    ? 'http://localhost:5000/api'
+    : '/api';
 
 const api = axios.create({
-  baseURL: `${BASE_URL}/api`,
-  timeout: 10000
+  baseURL: BASE_URL,
+  timeout: 10000,
 });
 
 // Attach token otomatis

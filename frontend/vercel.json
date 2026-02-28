@@ -1,6 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://rm-doabunda-3x636jya2-kiakioos-projects.vercel.app/api/$1" },
-    { "source": "/(.*)", "destination": "/" }
-  ]
-}
