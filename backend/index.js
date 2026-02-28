@@ -7,12 +7,15 @@ const app = express();
 app.use(cors({
     origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+allowedHeaders: '*'
 }));
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({ message: 'API RM DOA BUNDA Running' });
+    res.json({ 
+        message: 'API RM DOA BUNDA Berjalan Lancar!',
+        database_status: process.env.DB_HOST ? 'Terhubung (Environment Variables Terbaca)' : 'KOSONG (Cek brankas Vercel!)'
+    });
 });
 
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -22,9 +25,13 @@ app.use('/api/rekap', require('./routes/rekapRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/expenses', require('./routes/expenseRoutes'));
 
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-}
+app.use((err, req, res, next) => {
+    console.error("Backend Error Terdeteksi:", err);
+    res.status(500).json({ success: false, message: 'Server Backend Error', error: err.message });
+});
+
+app.use('*', (req, res) => {
+    res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
+});
 
 module.exports = app;
