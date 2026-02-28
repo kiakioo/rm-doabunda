@@ -1,36 +1,100 @@
-const Transaksi = require('../models/Transaksi');
+const db = require('../utils/db');
 
-const checkout = async (req, res) => {
-    try {
-        // req.user.id didapat dari Middleware Auth (Satpam) yang kita buat sebelumnya
-        const userId = req.user.id; 
-        const { payment_method, source, items } = req.body;
+// ==========================
+// CHECKOUT
+// ==========================
+const checkoutTransaction = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
 
-        if (!items || items.length === 0) {
-            return res.status(400).json({ message: 'Keranjang belanja tidak boleh kosong!' });
-        }
+    const userId = req.user.id;
+    const { payment_method, source, items } = req.body;
 
-        const transactionId = await Transaksi.create(userId, { payment_method, source, items });
-        
-        res.status(201).json({ 
-            message: 'Transaksi berhasil disimpan!', 
-            transaction_id: transactionId 
-        });
+    const totalAmount = items.reduce(
+      (sum, item) => sum + (item.price * item.qty),
+      0
+    );
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Gagal memproses transaksi.' });
+    const [trxResult] = await connection.query(
+      `INSERT INTO transactions 
+       (user_id, payment_method, source, total_amount) 
+       VALUES (?, ?, ?, ?)`,
+      [userId, payment_method, source || 'POS', totalAmount]
+    );
+
+    const transactionId = trxResult.insertId;
+
+    for (const item of items) {
+      await connection.query(
+        `INSERT INTO transaction_items 
+         (transaction_id, menu_id, qty, price)
+         VALUES (?, ?, ?, ?)`,
+        [transactionId, item.menu_id, item.qty, item.price]
+      );
     }
+
+    await connection.commit();
+
+    res.json({ message: 'Transaksi berhasil', transactionId });
+
+  } catch (error) {
+    await connection.rollback();
+    console.error(error);
+    res.status(500).json({ message: 'Gagal memproses transaksi' });
+  } finally {
+    connection.release();
+  }
 };
 
-const getHistory = async (req, res) => {
-    try {
-        const history = await Transaksi.getTodayHistory();
-        res.json({ message: 'Berhasil mengambil riwayat transaksi', data: history });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Gagal mengambil riwayat transaksi' });
+// ==========================
+// HISTORY
+// ==========================
+const getTransactions = async (req, res) => {
+  try {
+    const { date } = req.query;
+    const user = req.user;
+
+    let query = `
+      SELECT 
+        t.id,
+        t.payment_method,
+        t.source,
+        t.total_amount,
+        t.created_at,
+        u.name AS cashier
+      FROM transactions t
+      JOIN users u ON u.id = t.user_id
+    `;
+
+    const params = [];
+
+    if (user.role === 'kasir') {
+      query += ` WHERE t.user_id = ?`;
+      params.push(user.id);
+
+      if (date) {
+        query += ` AND DATE(t.created_at) = ?`;
+        params.push(date);
+      }
+
+    } else {
+      if (date) {
+        query += ` WHERE DATE(t.created_at) = ?`;
+        params.push(date);
+      }
     }
+
+    query += ` ORDER BY t.created_at DESC`;
+
+    const [rows] = await db.query(query, params);
+
+    res.json({ data: rows });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Gagal mengambil history transaksi' });
+  }
 };
 
-module.exports = { checkout, getHistory };
+module.exports = { checkoutTransaction, getTransactions };

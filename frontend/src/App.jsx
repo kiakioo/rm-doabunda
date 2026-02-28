@@ -8,6 +8,7 @@ import KelolaMenu from './pages/KelolaMenu';
 import RekapHarian from './pages/RekapHarian';
 import ManajemenUser from './pages/ManajemenUser';
 import Pengeluaran from './pages/Pengeluaran';
+import HistoryTransaksi from './pages/HistoryTransaksi';
 
 // 🔒 Cek Login
 const PrivateRoute = ({ children }) => {
@@ -102,6 +103,11 @@ function App() {
         />
 
         <Route path="*" element={<Navigate to="/" />} />
+        
+        <Route 
+          path="/history-transaksi" 
+          element={<PrivateRoute><HistoryTransaksi /></PrivateRoute>} 
+/>
 
       </Routes>
     </Router>
