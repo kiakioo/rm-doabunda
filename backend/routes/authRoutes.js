@@ -1,8 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { login } = require('../controllers/authController');
+const { login, register, getMe } = require('../controllers/authController');
+const { verifyToken, verifyAdmin } = require('../middleware/authMiddleware');
 
-// URL Endpoint: POST http://localhost:5000/api/auth/login
+// Hanya berisi rute untuk Otentikasi
 router.post('/login', login);
+router.post('/register', verifyToken, verifyAdmin, register);
+router.get('/me', verifyToken, getMe);
 
 module.exports = router;

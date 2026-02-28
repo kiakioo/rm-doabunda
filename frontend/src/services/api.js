@@ -5,7 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_URL
     : 'https://rm-doabunda.vercel.app/api';
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_URL,
   timeout: 30000,
 });
 
