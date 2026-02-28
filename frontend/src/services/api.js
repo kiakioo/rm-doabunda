@@ -2,11 +2,17 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
-  // VITE_API_URL harus diset di Vercel (Project > Environment Variables)
   const envUrl = import.meta.env.VITE_API_URL;
-  const fallback = 'http://localhost:5000';
-  const url = envUrl || fallback;
-  return url.endsWith('/') ? url.slice(0, -1) : url;
+
+  // 🔥 Jika di production Vercel dan belum set env, pakai backend project langsung
+  if (import.meta.env.PROD) {
+    const prodURL = envUrl || 'https://rm-doabunda.vercel.app';
+    return prodURL.endsWith('/') ? prodURL.slice(0, -1) : prodURL;
+  }
+
+  // Local development
+  const localURL = envUrl || 'http://localhost:5000';
+  return localURL.endsWith('/') ? localURL.slice(0, -1) : localURL;
 };
 
 const api = axios.create({
@@ -14,25 +20,30 @@ const api = axios.create({
   timeout: 10000
 });
 
-// Request: attach token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers = config.headers || {};
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+// Attach token otomatis
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// Response: uniform error handling + logging
-api.interceptors.response.use((response) => {
-  return response;
-}, (error) => {
-  console.error('[API ERROR]', error?.response?.status, error?.response?.data || error.message);
-  // Optional: you can transform some statuses to user-friendly messages here
-  return Promise.reject(error);
-});
+// Logging error rapi
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error(
+      '[API ERROR]',
+      error?.response?.status,
+      error?.response?.data || error.message
+    );
+    return Promise.reject(error);
+  }
+);
 
 export default api;
