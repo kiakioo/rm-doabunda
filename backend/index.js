@@ -48,4 +48,13 @@ if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
+app.use((err, req, res, next) => {
+    console.error("DETAIL ERROR:", err.stack);
+    res.status(500).json({ 
+        success: false, 
+        message: 'Terjadi kesalahan pada server', 
+        error: err.message 
+    });
+});
+
 module.exports = app;
