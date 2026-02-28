@@ -5,7 +5,7 @@ const { verifyToken } = require('../middleware/authMiddleware');
 const {
   checkoutTransaction,
   getTransactions
-} = require('../controllers/transactionController');
+} = require('../controllers/transaksiController');
 
 router.post('/checkout', verifyToken, checkoutTransaction);
 router.get('/', verifyToken, getTransactions);
