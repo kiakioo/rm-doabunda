@@ -20,12 +20,12 @@ app.get('/', (req, res) => {
 });
 
 try {
-  app.use('/api/auth', require('./routes/authRoutes'));
-  app.use('/api/menus', require('./routes/menuRoutes'));
-  app.use('/api/transactions', require('./routes/transaksiRoutes'));
-  app.use('/api/rekap', require('./routes/rekapRoutes'));
-  app.use('/api/users', require('./routes/userRoutes'));
-  app.use('/api/expenses', require('./routes/expenseRoutes'));
+  app.use('/api/auth', require('./backend/routes/authRoutes'));
+  app.use('/api/menus', require('./backend/routes/menuRoutes'));
+  app.use('/api/transactions', require('./backend/routes/transaksiRoutes'));
+  app.use('/api/rekap', require('./backend/routes/rekapRoutes'));
+  app.use('/api/users', require('./backend/routes/userRoutes'));
+  app.use('/api/expenses', require('./backend/routes/expenseRoutes'));
 } catch (err) {
   console.error('Error while mounting routes:', err);
 }
