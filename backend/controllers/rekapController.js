@@ -7,23 +7,18 @@ const db = require('../utils/db');
 const generateDailyRecap = async (req, res) => {
     try {
         const adminId = req.user.id;
-        
-        // Penentuan Tanggal Lokal (YYYY-MM-DD) agar sinkron dengan database
         const dateLocal = new Date();
         dateLocal.setMinutes(dateLocal.getMinutes() - dateLocal.getTimezoneOffset());
         const today = dateLocal.toISOString().slice(0, 10);
 
-        // 1. Ambil Total Pengeluaran hari ini dari tabel expenses
         const [expenseResult] = await db.query(
             'SELECT SUM(amount) as total FROM expenses WHERE DATE(expense_date) = ?',
             [today]
         );
         const totalExpense = expenseResult[0]?.total ? parseFloat(expenseResult[0].total) : 0;
 
-        // 2. Ambil Ringkasan Transaksi per metode pembayaran
         const summary = await Rekap.getSummaryByDate(today);
         
-        // 3. Ambil total count transaksi (struk) agar data tidak nol di laporan
         const [countResult] = await db.query(
             'SELECT COUNT(id) as total_count FROM transactions WHERE DATE(created_at) = ?',
             [today]
@@ -31,7 +26,6 @@ const generateDailyRecap = async (req, res) => {
         const totalTransactions = countResult[0]?.total_count || 0;
 
         let totalCash = 0; let totalQris = 0; let totalGrab = 0;
-
         summary.forEach(item => {
             if (item.payment_method === 'Cash') totalCash = parseFloat(item.total) || 0;
             if (item.payment_method === 'QRIS') totalQris = parseFloat(item.total) || 0;
@@ -40,7 +34,6 @@ const generateDailyRecap = async (req, res) => {
 
         const totalRevenue = totalCash + totalQris + totalGrab;
 
-        // 4. Simpan atau Update jika sudah ada (Upsert Logic)
         const query = `
             INSERT INTO daily_recaps 
             (admin_id, recap_date, total_cash, total_qris, total_grab, total_revenue, total_expense, total_transactions, net_profit) 
@@ -62,7 +55,6 @@ const generateDailyRecap = async (req, res) => {
         ]);
 
         res.json({ success: true, message: 'Tutup buku harian berhasil diproses dan disinkronkan!' });
-
     } catch (error) {
         console.error("Generate recap error:", error);
         res.status(500).json({ success: false, message: 'Gagal melakukan rekap harian' });
@@ -70,34 +62,54 @@ const generateDailyRecap = async (req, res) => {
 };
 
 // ===============================
-// 2. UPDATE EXTRA INCOME (Dana Tambahan)
+// 2. ADD EXTRA INCOME LOG (Uang Tambahan: Sisa Pasar, dll)
 // ===============================
-const updateExtraIncome = async (req, res) => {
-    const { amount, date } = req.body; 
+const addExtraIncome = async (req, res) => {
+    const { amount, source_name, date } = req.body;
+    const dateTarget = date || new Date().toISOString().slice(0, 10);
+    const valAmount = parseFloat(amount) || 0;
+
+    let connection;
     try {
-        const valAmount = parseFloat(amount) || 0;
-        
-        // Update extra income dan hitung ulang net_profit secara otomatis
-        // Rumus: (revenue + extra_income) - expense
-        const [result] = await db.query(
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // 1. Cek apakah rekap hari tersebut sudah ada
+        const [rekapExist] = await connection.query(
+            'SELECT id FROM daily_recaps WHERE recap_date = ?',
+            [dateTarget]
+        );
+
+        if (rekapExist.length === 0) {
+            throw new Error('Harus melakukan Tutup Buku terlebih dahulu sebelum menambah uang tambahan!');
+        }
+
+        // 2. Masukkan ke tabel log histori
+        await connection.query(
+            'INSERT INTO extra_income_logs (recap_date, amount, source_name) VALUES (?, ?, ?)',
+            [dateTarget, valAmount, source_name]
+        );
+
+        // 3. Update total extra_income dan net_profit di tabel daily_recaps
+        await connection.query(
             `UPDATE daily_recaps 
              SET extra_income = extra_income + ?, 
                  net_profit = (total_revenue + extra_income + ?) - total_expense
              WHERE recap_date = ?`,
-            [valAmount, valAmount, date]
+            [valAmount, valAmount, dateTarget]
         );
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                message: 'Data rekap untuk tanggal tersebut tidak ditemukan. Lakukan Tutup Buku dulu!' 
-            });
-        }
-
-        res.json({ success: true, message: `Dana tambahan sebesar Rp ${valAmount.toLocaleString('id-ID')} berhasil dicatat.` });
+        await connection.commit();
+        res.json({ 
+            success: true, 
+            message: `Berhasil menambahkan ${source_name} sebesar Rp ${valAmount.toLocaleString('id-ID')}` 
+        });
     } catch (error) {
-        console.error("EXTRA INCOME ERROR:", error);
-        res.status(500).json({ success: false, message: 'Gagal menambahkan dana masuk tambahan' });
+        if (connection) await connection.rollback();
+        console.error("ADD EXTRA INCOME ERROR:", error);
+        res.status(400).json({ success: false, message: error.message });
+    } finally {
+        if (connection) connection.release();
     }
 };
 
@@ -152,7 +164,7 @@ const deleteRekap = async (req, res) => {
 
 module.exports = {
     generateDailyRecap,
-    updateExtraIncome,
+    addExtraIncome, // Sudah ter-export sekarang
     getSummary,
     getHistory,
     deleteRekap

@@ -4,9 +4,22 @@ require('dotenv').config();
 
 const app = express();
 
-// 🛠️ PERBAIKAN CORS: Mendukung semua metode yang dibutuhkan Frontend
+// 🛠️ PERBAIKAN CORS: Vercel melarang origin '*' jika credentials true
+// Gunakan konfigurasi yang lebih aman agar tidak error di production
+const allowedOrigins = [
+  'https://rm-doabunda1.vercel.app', // Domain Frontend Anda
+  'http://localhost:5173'           // Local development
+];
+
 app.use(cors({
-    origin: '*', 
+    origin: function (origin, callback) {
+        // Izinkan request tanpa origin (seperti mobile apps atau curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            return callback(new Error('CORS Policy: Origin not allowed'), false);
+        }
+        return callback(null, true);
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
@@ -14,11 +27,12 @@ app.use(cors({
 
 app.use(express.json());
 
-// Rute Cek Kesehatan
-app.get('/', (req, res) => {
+// Rute Cek Kesehatan (Gunakan rute dasar agar Vercel dashboard mendeteksi status online)
+app.get('/api/health', (req, res) => {
   res.json({ 
     message: 'API RM DOA BUNDA Berjalan Normal!',
-    status: 'Online'
+    status: 'Online',
+    timestamp: new Date()
   });
 });
 
@@ -38,8 +52,8 @@ app.use('/api/rekap', rekapRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 
-// Penanganan 404
-app.use((req, res) => {
+// Penanganan 404 - Harus diletakkan SETELAH rute API
+app.use('/api/*', (req, res) => {
     res.status(404).json({ 
         success: false, 
         message: `Endpoint ${req.originalUrl} tidak ditemukan pada server.` 
@@ -48,17 +62,19 @@ app.use((req, res) => {
 
 // Error Handler Global
 app.use((err, req, res, next) => {
-    console.error("DETAIL ERROR:", err);
-    res.status(err.status || 500).json({ 
+    console.error("🔥 DETAIL ERROR SERVER:", err);
+    const statusCode = err.status || 500;
+    res.status(statusCode).json({ 
         success: false, 
-        message: 'Internal Server Error', 
-        error: err.message 
+        message: statusCode === 500 ? 'Internal Server Error' : err.message,
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined 
     });
 });
 
+// PENTING: Untuk Vercel, jangan gunakan app.listen di rute utama
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
 
 module.exports = app;
