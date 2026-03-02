@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../services/api'; // ✅ gunakan api.js agar ikut VITE_API_URL
+import api from '../services/api'; 
 import { useCartStore } from '../store/cartStore';
 import { ShoppingCart, Trash2, CreditCard, Wallet, Truck, Search, ChevronLeft } from 'lucide-react';
 import Swal from 'sweetalert2';
@@ -17,15 +17,22 @@ const Kasir = () => {
 
   const fetchMenus = async () => {
     try {
-      const res = await api.get('/menus'); // ✅ tidak pakai localhost lagi
-      
-      // ✅ Backend kamu return { message, data }
+      const res = await api.get('/menus'); 
       const data = res.data?.data || [];
-      
       setMenus(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Gagal mengambil menu", error);
       setMenus([]);
+    }
+  };
+
+  // Fungsi navigasi kembali berdasarkan role
+  const handleBack = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user?.role === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/kasir/dashboard');
     }
   };
 
@@ -50,7 +57,7 @@ const Kasir = () => {
         }))
       };
 
-      await api.post('/transactions/checkout', payload); // ✅ pakai api instance
+      await api.post('/transactions/checkout', payload); 
 
       Swal.fire({
         icon: 'success',
@@ -84,9 +91,14 @@ const Kasir = () => {
         
         <div className="bg-white p-4 md:p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between sm:items-center gap-4 shadow-sm z-10 shrink-0">
           <div className="flex items-center gap-3 md:gap-4">
-            <button onClick={() => navigate('/admin')} className="p-2 text-gray-400 hover:text-doabunda-dark hover:bg-gray-100 rounded-full transition-colors">
+            
+            <button 
+              onClick={handleBack} 
+              className="p-2 text-gray-400 hover:text-doabunda-dark hover:bg-gray-100 rounded-full transition-colors"
+            >
               <ChevronLeft size={24} />
             </button>
+
             <div>
               <h1 className="text-xl md:text-2xl font-black text-doabunda-dark tracking-wide">MESIN KASIR</h1>
               <p className="text-xs md:text-sm text-gray-500 font-medium">RM. Doa Bunda</p>
@@ -137,7 +149,7 @@ const Kasir = () => {
         </div>
       </div>
 
-      {/* KANAN (tidak diubah sama sekali) */}
+      {/* KANAN */}
       <div className="w-full md:w-1/3 h-[45vh] md:h-full bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.05)] md:shadow-[-10px_0_30px_rgba(0,0,0,0.03)] flex flex-col z-20 md:border-l border-gray-200">
         
         <div className="p-4 md:p-6 border-b border-gray-100 flex justify-between items-center shrink-0">

@@ -22,16 +22,19 @@ const Pengeluaran = () => {
     }
   };
 
-  const handleAdd = async (e) => {
-    e.preventDefault();
-    try {
-      await api.post('/expenses', formData);
-      setFormData({ description: '', amount: '' });
-      fetchExpenses();
-    } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Gagal', text: 'Sistem gagal mencatat pengeluaran.', confirmButtonColor: '#7D0A0A' });
-    }
-  };
+const handleAdd = async (e) => {
+  e.preventDefault();
+  try {
+    const payload = {
+      ...formData,
+      date: new Date().toISOString().split('T')[0] // Mengunci tanggal input ke hari ini
+    };
+    await api.post('/expenses', payload);
+    setFormData({ description: '', amount: '' });
+    fetchExpenses();
+  } catch (error) {
+  }
+};
 
   const handleDelete = async (id) => {
     try {

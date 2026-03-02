@@ -12,21 +12,20 @@ import Pengeluaran from './pages/Pengeluaran';
 import HistoryTransaksi from './pages/HistoryTransaksi';
 import Laporan from './pages/Laporan';
 
-// 🔒 Cek Login: Pastikan token ada
+// 🔒 Cek Login: Memastikan token tersedia di localStorage
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/" />;
 };
 
-// 🔐 Cek Role: Perbaikan logika agar tidak saling bentrok
+// 🔐 Cek Role: Memastikan pengguna mengakses halaman yang sesuai dengan hak aksesnya
 const RoleRoute = ({ children, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem('user'));
 
   if (!user) return <Navigate to="/" />;
 
-  // Jika role user tidak ada di daftar yang diizinkan
+  // Jika role pengguna tidak diizinkan di rute ini, arahkan ke dashboard masing-masing
   if (!allowedRoles.includes(user.role)) {
-    // Kembalikan ke dashboard masing-masing, jangan dicampur
     return user.role === 'admin' 
       ? <Navigate to="/admin" /> 
       : <Navigate to="/kasir/dashboard" />;
@@ -39,10 +38,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Halaman Login */}
+        {/* Halaman Login Utama */}
         <Route path="/" element={<Login />} />
 
-        {/* ===================== AREA KASIR (Kasir & Admin bisa akses) ===================== */}
+        {/* ===================== AREA KASIR (Akses: Admin & Kasir) ===================== */}
         <Route 
           path="/kasir/dashboard" 
           element={
@@ -76,7 +75,7 @@ function App() {
           }
         />
 
-        {/* ===================== AREA ADMIN (HANYA Admin) ===================== */}
+        {/* ===================== AREA ADMIN (Akses: Khusus Admin) ===================== */}
         <Route 
           path="/admin" 
           element={
@@ -143,7 +142,6 @@ function App() {
           }
         />
 
-        {/* ===================== LAIN-LAIN ===================== */}
         <Route 
           path="/history-transaksi" 
           element={
@@ -155,6 +153,7 @@ function App() {
           } 
         />
 
+        {/* Penanganan rute yang tidak ditemukan arahkan kembali ke Login */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

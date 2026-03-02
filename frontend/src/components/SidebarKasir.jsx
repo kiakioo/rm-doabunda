@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+// Mengimpor ikon dari lucide-react untuk menggantikan emoji
+import { LayoutDashboard, MonitorSmartphone, Receipt, LogOut } from 'lucide-react';
 
 const SidebarKasir = () => {
   const location = useLocation();
@@ -11,56 +13,57 @@ const SidebarKasir = () => {
     navigate('/');
   };
 
-  // TAMBAHAN: Menu Ringkasan dimasukkan ke posisi pertama
+  // Daftar Menu untuk Kasir menggunakan komponen ikon lucide-react
   const menuItems = [
-    { path: '/kasir/dashboard', label: 'Ringkasan', icon: '📊' },
-    { path: '/kasir', label: 'Buka Kasir', icon: '💻' },
-    { path: '/kasir/laporan', label: 'Riwayat Transaksi', icon: '📄' },
+    { path: '/kasir/dashboard', label: 'Ringkasan', icon: <LayoutDashboard size={20} /> },
+    { path: '/kasir', label: 'Buka Kasir', icon: <MonitorSmartphone size={20} /> },
+    { path: '/kasir/laporan', label: 'Riwayat Transaksi', icon: <Receipt size={20} /> },
   ];
 
   return (
-    <div style={{ width: '250px', backgroundColor: '#8B0000', color: 'white', display: 'flex', flexDirection: 'column', minHeight: '100vh', flexShrink: 0 }}>
-      <div style={{ padding: '30px 20px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <h2 style={{ color: '#F1C40F', margin: 0, letterSpacing: '2px' }}>DOA BUNDA</h2>
-        <p style={{ fontSize: '11px', color: '#ccc', margin: '5px 0 0 0', letterSpacing: '1px' }}>KASIR PANEL</p>
+    <div className="w-64 bg-doabunda-dark text-white flex flex-col min-h-screen shrink-0 shadow-xl border-r border-white/5">
+      {/* Header / Logo Section */}
+      <div className="p-8 text-center border-b border-white/10">
+        <h2 className="text-2xl font-black text-doabunda-gold tracking-widest uppercase">
+          DOA BUNDA
+        </h2>
+        <p className="text-[10px] text-white/50 tracking-[0.2em] mt-2 font-bold uppercase">
+          Kasir Panel
+        </p>
       </div>
 
-      <nav style={{ flex: 1, padding: '20px 10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+      {/* Navigasi Menu */}
+      <nav className="flex-1 px-4 py-8 space-y-2">
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link 
               key={item.path} 
               to={item.path} 
-              style={{
-                textDecoration: 'none',
-                color: 'white',
-                padding: '12px 20px',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px',
-                backgroundColor: isActive ? '#C0392B' : 'transparent',
-                transition: '0.3s'
-              }}
+              className={`
+                flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 group
+                ${isActive 
+                  ? 'bg-doabunda-primary text-white shadow-lg shadow-black/20 font-bold' 
+                  : 'text-white/60 hover:bg-white/5 hover:text-white'}
+              `}
             >
-              <span style={{ fontSize: '18px' }}>{item.icon}</span>
-              <span style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{item.label}</span>
+              <span className={`${isActive ? 'text-white' : 'text-doabunda-gold group-hover:scale-110 transition-transform'}`}>
+                {item.icon}
+              </span>
+              <span className="text-sm tracking-wide">{item.label}</span>
             </Link>
-          )
+          );
         })}
       </nav>
 
-      <div style={{ padding: '20px' }}>
+      {/* Tombol Keluar (Logout) */}
+      <div className="p-6">
         <button 
           onClick={handleLogout}
-          style={{
-            width: '100%', padding: '12px', backgroundColor: 'transparent', color: 'white', 
-            border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', cursor: 'pointer', 
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '16px'
-          }}
+          className="w-full flex items-center justify-center gap-3 px-4 py-4 bg-white/5 hover:bg-red-600/20 text-white/70 hover:text-white border border-white/10 rounded-2xl transition-all duration-300 group font-bold text-sm"
         >
-          <span>🚪</span> Keluar
+          <LogOut size={18} className="group-hover:-translate-x-1 transition-transform" />
+          Keluar
         </button>
       </div>
     </div>
