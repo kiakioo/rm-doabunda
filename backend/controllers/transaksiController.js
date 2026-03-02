@@ -1,5 +1,8 @@
 const db = require('../utils/db');
 
+// =====================================
+// 1. FUNGSI CHECKOUT TRANSAKSI
+// =====================================
 const checkoutTransaction = async (req, res) => {
   const userId = req.user.id;
   const { payment_method, source, items } = req.body;
@@ -41,6 +44,9 @@ const checkoutTransaction = async (req, res) => {
   }
 };
 
+// =====================================
+// 2. FUNGSI AMBIL RIWAYAT (+ DETAIL MENU)
+// =====================================
 const getTransactions = async (req, res) => {
   try {
     const { date } = req.query;
@@ -52,7 +58,6 @@ const getTransactions = async (req, res) => {
     `;
     const params = [];
 
-    // Jika yang login kasir, hanya lihat transaksinya sendiri
     if (user.role === 'kasir') {
       query += ` WHERE t.user_id = ?`;
       params.push(user.id);
@@ -63,8 +68,35 @@ const getTransactions = async (req, res) => {
 
     query += ` ORDER BY t.created_at DESC`;
 
-    const [rows] = await db.query(query, params);
-    res.json({ success: true, data: rows });
+    // Ambil Data Transaksi Utama
+    const [transactions] = await db.query(query, params);
+
+    if (transactions.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    // Ambil Detail Menu untuk semua transaksi yang ditemukan
+    const trxIds = transactions.map(t => t.id);
+    const [items] = await db.query(`
+      SELECT ti.transaction_id, ti.qty, ti.price, m.name
+      FROM transaction_items ti
+      LEFT JOIN menus m ON ti.menu_id = m.id
+      WHERE ti.transaction_id IN (?)
+    `, [trxIds]);
+
+    // Gabungkan transaksi dengan item-itemnya
+    const dataWithItems = transactions.map(trx => ({
+      ...trx,
+      items: items
+        .filter(item => item.transaction_id === trx.id)
+        .map(item => ({
+          name: item.name || 'Menu Dihapus', // Jaga-jaga jika menu sudah dihapus di master
+          qty: item.qty,
+          price: item.price
+        }))
+    }));
+
+    res.json({ success: true, data: dataWithItems });
 
   } catch (error) {
     console.error('History error:', error);
@@ -72,9 +104,9 @@ const getTransactions = async (req, res) => {
   }
 };
 
-// ==========================================
-// FUNGSI BARU: HAPUS TRANSAKSI
-// ==========================================
+// =====================================
+// 3. FUNGSI HAPUS TRANSAKSI 
+// =====================================
 const deleteTransaction = async (req, res) => {
   const { id } = req.params;
   let connection;
@@ -83,10 +115,8 @@ const deleteTransaction = async (req, res) => {
     connection = await db.getConnection();
     await connection.beginTransaction();
 
-    // 1. Hapus isi detail transaksi terlebih dahulu (mencegah error Foreign Key)
+    // Hapus isinya dulu agar tidak error relasi tabel
     await connection.query('DELETE FROM transaction_items WHERE transaction_id = ?', [id]);
-
-    // 2. Hapus transaksi utama
     const [result] = await connection.query('DELETE FROM transactions WHERE id = ?', [id]);
 
     if (result.affectedRows === 0) {
@@ -106,5 +136,4 @@ const deleteTransaction = async (req, res) => {
   }
 };
 
-// Pastikan deleteTransaction ikut di-export!
 module.exports = { checkoutTransaction, getTransactions, deleteTransaction };
