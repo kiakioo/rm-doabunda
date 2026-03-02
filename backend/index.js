@@ -1,6 +1,5 @@
-const express = require('express'); 
+const express = require('express');
 const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -12,30 +11,29 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Rute Cek Kesehatan
 app.get('/', (req, res) => {
   res.json({ 
-    message: 'API RM DOA BUNDA Berjalan!',
+    message: 'API RM DOA BUNDA Berjalan Normal!',
     status: 'Online'
   });
 });
 
-const authRoutes = require(path.join(__dirname, 'routes/authRoutes'));
-const menuRoutes = require(path.join(__dirname, 'routes/menuRoutes'));
-const transaksiRoutes = require(path.join(__dirname, 'routes/transaksiRoutes'));
-const rekapRoutes = require(path.join(__dirname, 'routes/rekapRoutes'));
-const userRoutes = require(path.join(__dirname, 'routes/userRoutes'));
-const expenseRoutes = require(path.join(__dirname, 'routes/expenseRoutes')); 
+const authRoutes = require('./routes/authRoutes');
+const menuRoutes = require('./routes/menuRoutes');
+const transaksiRoutes = require('./routes/transaksiRoutes');
+const rekapRoutes = require('./routes/rekapRoutes');
+const userRoutes = require('./routes/userRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/transactions', transaksiRoutes);
 app.use('/api/rekap', rekapRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/expenses', expenseRoutes); 
+app.use('/api/expenses', expenseRoutes);
 
 app.use((err, req, res, next) => {
-    console.error("DETAIL ERROR:", err.stack);
+    console.error("DETAIL ERROR:", err);
     res.status(500).json({ 
         success: false, 
         message: 'Server Error', 
