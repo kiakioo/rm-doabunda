@@ -4,10 +4,10 @@ require('dotenv').config();
 
 const app = express();
 
-// 🛠️ PERBAIKAN CORS: Menambahkan PATCH dan mendukung Credentials
+// 🛠️ PERBAIKAN CORS: Mendukung semua metode yang dibutuhkan Frontend
 app.use(cors({
-    origin: '*', // Atau ganti dengan domain frontend spesifik Anda untuk keamanan lebih tinggi
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // WAJIB ADA PATCH
+    origin: '*', 
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
 }));
@@ -34,7 +34,7 @@ const expenseRoutes = require('./routes/expenseRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/transactions', transaksiRoutes);
-app.use('/api/rekap', rekapRoutes); // Pastikan di dalam rekapRoutes sudah ada router.patch('/extra-income', ...)
+app.use('/api/rekap', rekapRoutes); 
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 
@@ -56,8 +56,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Untuk deployment Vercel, server dijalankan secara otomatis. 
-// Blok listen hanya untuk development lokal.
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
