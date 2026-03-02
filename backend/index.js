@@ -11,6 +11,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Rute Cek Kesehatan
 app.get('/', (req, res) => {
   res.json({ 
     message: 'API RM DOA BUNDA Berjalan Normal!',
@@ -18,6 +19,7 @@ app.get('/', (req, res) => {
   });
 });
 
+// Import Rute 
 const authRoutes = require('./routes/authRoutes');
 const menuRoutes = require('./routes/menuRoutes');
 const transaksiRoutes = require('./routes/transaksiRoutes');
@@ -25,6 +27,7 @@ const rekapRoutes = require('./routes/rekapRoutes');
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
 
+// Gunakan Rute
 app.use('/api/auth', authRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/transactions', transaksiRoutes);
@@ -32,6 +35,12 @@ app.use('/api/rekap', rekapRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 
+// Penanganan 404 (Tanda bintang '*' DIHAPUS agar kompatibel dengan Express 5)
+app.use((req, res) => {
+    res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
+});
+
+// Error Handler Global
 app.use((err, req, res, next) => {
     console.error("DETAIL ERROR:", err);
     res.status(500).json({ 
@@ -39,10 +48,6 @@ app.use((err, req, res, next) => {
         message: 'Server Error', 
         error: err.message 
     });
-});
-
-app.use('*', (req, res) => {
-    res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
 });
 
 if (process.env.NODE_ENV !== 'production') {
