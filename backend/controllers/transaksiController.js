@@ -72,4 +72,39 @@ const getTransactions = async (req, res) => {
   }
 };
 
-module.exports = { checkoutTransaction, getTransactions };
+// ==========================================
+// FUNGSI BARU: HAPUS TRANSAKSI
+// ==========================================
+const deleteTransaction = async (req, res) => {
+  const { id } = req.params;
+  let connection;
+
+  try {
+    connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    // 1. Hapus isi detail transaksi terlebih dahulu (mencegah error Foreign Key)
+    await connection.query('DELETE FROM transaction_items WHERE transaction_id = ?', [id]);
+
+    // 2. Hapus transaksi utama
+    const [result] = await connection.query('DELETE FROM transactions WHERE id = ?', [id]);
+
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      return res.status(404).json({ success: false, message: 'Data transaksi tidak ditemukan' });
+    }
+
+    await connection.commit();
+    res.json({ success: true, message: 'Transaksi berhasil dihapus' });
+
+  } catch (error) {
+    if (connection) await connection.rollback();
+    console.error('Delete transaction error:', error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus transaksi', error_detail: error.message });
+  } finally {
+    if (connection) connection.release();
+  }
+};
+
+// Pastikan deleteTransaction ikut di-export!
+module.exports = { checkoutTransaction, getTransactions, deleteTransaction };
