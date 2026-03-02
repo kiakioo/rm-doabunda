@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { Plus, Trash2, Utensils } from 'lucide-react';
+import { Plus, Trash2, Edit2, Utensils, X } from 'lucide-react';
 import Swal from 'sweetalert2';
 import SidebarAdmin from '../components/SidebarAdmin';
 
 const KelolaMenu = () => {
   const [menus, setMenus] = useState([]);
   const [form, setForm] = useState({ name: '', category: 'Makanan', price: '' });
+  const [editingId, setEditingId] = useState(null); // State untuk melacak menu yang sedang diedit
 
   useEffect(() => { fetchMenus(); }, []);
 
@@ -22,13 +23,33 @@ const KelolaMenu = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/menus', form);
-      Swal.fire('Berhasil!', 'Menu ditambahkan', 'success');
+      if (editingId) {
+        // Logika UPDATE jika sedang mode Edit
+        await api.put(`/menus/${editingId}`, form);
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data menu diperbarui', confirmButtonColor: '#BF3131' });
+        setEditingId(null);
+      } else {
+        // Logika CREATE jika mode Tambah Baru
+        await api.post('/menus', form);
+        Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Menu ditambahkan', confirmButtonColor: '#BF3131' });
+      }
       setForm({ name: '', category: 'Makanan', price: '' });
       fetchMenus();
     } catch (err) {
-      Swal.fire('Gagal!', 'Terjadi kesalahan sistem', 'error');
+      Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan sistem', confirmButtonColor: '#BF3131' });
     }
+  };
+
+  // Fungsi saat tombol Edit ditekan
+  const handleEdit = (menu) => {
+    setForm({ name: menu.name, category: menu.category, price: menu.price });
+    setEditingId(menu.id);
+  };
+
+  // Fungsi untuk membatalkan proses Edit
+  const cancelEdit = () => {
+    setForm({ name: '', category: 'Makanan', price: '' });
+    setEditingId(null);
   };
 
   const deleteMenu = async (id) => {
@@ -51,68 +72,65 @@ const KelolaMenu = () => {
   };
 
   return (
-    // Membungkus dengan layout flex Sidebar (Kiri) dan Konten (Kanan)
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 font-sans w-full">
-      
-      {/* Memanggil komponen navigasi samping */}
       <SidebarAdmin />
 
-      {/* Area Konten Utama - pt-24 wajib agar tidak tertutup header navigasi di HP */}
       <div className="flex-1 p-4 pt-20 md:p-8 md:pt-8 w-full overflow-x-hidden">
         
         <header className="mb-6 md:mb-8 flex items-center gap-3">
           <Utensils className="text-doabunda-primary" size={32} />
           <div>
-            <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-wide">KELOLA MENU</h1>
-            <p className="text-gray-500 text-sm mt-1">Atur daftar makanan dan harga untuk Kasir.</p>
+            <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-wide uppercase">KELOLA MENU</h1>
+            <p className="text-gray-500 text-sm mt-1">Atur daftar makanan, kategori, dan harga untuk Kasir.</p>
           </div>
         </header>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
           
-          {/* ================= FORM TAMBAH MENU ================= */}
-          <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm h-fit border border-gray-100 border-t-8 border-t-doabunda-primary">
-            <h2 className="text-lg md:text-xl font-black text-doabunda-dark mb-4 flex items-center gap-2">
-              <Plus size={20} /> Tambah Menu Baru
+          {/* ================= FORM TAMBAH / EDIT MENU ================= */}
+          <div className={`p-5 md:p-6 rounded-2xl shadow-sm h-fit border border-gray-100 border-t-8 transition-all ${editingId ? 'bg-blue-50 border-t-blue-500' : 'bg-white border-t-doabunda-primary'}`}>
+            <h2 className={`text-lg md:text-xl font-black mb-4 flex items-center gap-2 ${editingId ? 'text-blue-700' : 'text-doabunda-dark'}`}>
+              {editingId ? <Edit2 size={20} /> : <Plus size={20} />}
+              {editingId ? 'Edit Data Menu' : 'Tambah Menu Baru'}
             </h2>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <input 
-                type="text" 
-                placeholder="Nama Menu" 
-                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:border-doabunda-primary focus:ring-1 focus:ring-doabunda-primary outline-none transition-all" 
-                value={form.name} 
-                onChange={e => setForm({...form, name: e.target.value})} 
-                required 
+                type="text" placeholder="Nama Menu" required
+                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
+                value={form.name} onChange={e => setForm({...form, name: e.target.value})} 
               />
               <select 
-                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:border-doabunda-primary focus:ring-1 focus:ring-doabunda-primary outline-none transition-all" 
-                value={form.category} 
-                onChange={e => setForm({...form, category: e.target.value})}
+                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
+                value={form.category} onChange={e => setForm({...form, category: e.target.value})}
               >
                 <option value="Makanan">Makanan</option>
                 <option value="Minuman">Minuman</option>
               </select>
               <input 
-                type="number" 
-                placeholder="Harga (Rp)" 
-                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:border-doabunda-primary focus:ring-1 focus:ring-doabunda-primary outline-none transition-all" 
-                value={form.price} 
-                onChange={e => setForm({...form, price: e.target.value})} 
-                required 
+                type="number" placeholder="Harga (Rp)" required
+                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
+                value={form.price} onChange={e => setForm({...form, price: e.target.value})} 
               />
-              <button className="w-full bg-doabunda-dark text-white font-bold py-3.5 rounded-xl hover:bg-doabunda-primary transition-all text-sm tracking-wide mt-2">
-                SIMPAN MENU
-              </button>
+              
+              <div className="flex flex-col gap-2 mt-2">
+                <button type="submit" className={`w-full text-white font-bold py-3.5 rounded-xl transition-all text-sm tracking-wide ${editingId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-doabunda-dark hover:bg-doabunda-primary'}`}>
+                  {editingId ? 'UPDATE MENU' : 'SIMPAN MENU'}
+                </button>
+                {editingId && (
+                  <button type="button" onClick={cancelEdit} className="w-full bg-white text-gray-500 border border-gray-300 font-bold py-3.5 rounded-xl hover:bg-gray-100 transition-all text-sm flex items-center justify-center gap-2">
+                    <X size={18} /> BATAL EDIT
+                  </button>
+                )}
+              </div>
             </form>
           </div>
 
           {/* ================= TABEL MENU ================= */}
           <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            {/* Wrapper overflow-x-auto agar tabel bisa digeser di layar kecil */}
             <div className="overflow-x-auto w-full">
-              {/* min-w-[600px] memaksa tabel mempertahankan bentuk aslinya dan tidak gepeng di HP */}
               <table className="w-full text-left min-w-[600px]">
-                <thead className="bg-doabunda-dark text-doabunda-gold uppercase text-[11px] md:text-xs tracking-wider">
+                <thead className="bg-doabunda-dark text-doabunda-gold uppercase text-[11px] md:text-xs tracking-wider border-b border-doabunda-primary/30">
                   <tr>
                     <th className="p-4 font-black">Nama Menu</th>
                     <th className="p-4 font-black">Kategori</th>
@@ -122,7 +140,7 @@ const KelolaMenu = () => {
                 </thead>
                 <tbody className="text-sm divide-y divide-gray-100">
                   {menus.length > 0 ? menus.map(menu => (
-                    <tr key={menu.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={menu.id} className={`transition-colors ${editingId === menu.id ? 'bg-blue-50/50' : 'hover:bg-gray-50'}`}>
                       <td className="p-4 font-bold text-gray-800">{menu.name}</td>
                       <td className="p-4">
                         <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
@@ -132,7 +150,16 @@ const KelolaMenu = () => {
                       <td className="p-4 font-black text-doabunda-primary">
                         Rp {Number(menu.price).toLocaleString('id-ID')}
                       </td>
-                      <td className="p-4 flex justify-center">
+                      <td className="p-4 flex justify-center gap-2">
+                        {/* Tombol Edit */}
+                        <button 
+                          onClick={() => handleEdit(menu)} 
+                          className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-all"
+                          title="Edit Menu"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        {/* Tombol Hapus */}
                         <button 
                           onClick={() => deleteMenu(menu.id)} 
                           className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"

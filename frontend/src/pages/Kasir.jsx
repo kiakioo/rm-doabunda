@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api'; 
 import { useCartStore } from '../store/cartStore';
-import { ShoppingCart, Trash2, CreditCard, Wallet, Truck, Search, ChevronLeft } from 'lucide-react';
+import { ShoppingCart, Trash2, CreditCard, Wallet, Truck, Search, ChevronLeft, Plus, Minus } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 
 const Kasir = () => {
   const [menus, setMenus] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const { cart, addToCart, removeFromCart, clearCart, getTotal } = useCartStore();
+  
+  // Destructure fungsi baru (increaseQuantity, decreaseQuantity)
+  const { cart, addToCart, removeFromCart, clearCart, getTotal, increaseQuantity, decreaseQuantity } = useCartStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,7 +28,6 @@ const Kasir = () => {
     }
   };
 
-  // Fungsi navigasi kembali berdasarkan role
   const handleBack = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user?.role === 'admin') {
@@ -84,13 +85,12 @@ const Kasir = () => {
   );
 
   return (
-    // Menggunakan 100dvh agar tidak terpotong address bar di browser HP
     <div className="flex flex-col md:flex-row h-[100dvh] w-full bg-gray-50 font-sans overflow-hidden">
       
       {/* ================= AREA KIRI: DAFTAR MENU ================= */}
       <div className="w-full md:w-[60%] lg:w-[72%] h-[55dvh] md:h-full flex flex-col relative z-0">
         
-        {/* Header Kiri (Sticky) */}
+        {/* Header Kiri */}
         <div className="bg-white p-3 md:p-5 lg:p-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between sm:items-center gap-3 lg:gap-4 shadow-sm shrink-0">
           <div className="flex items-center gap-2 md:gap-4">
             <button 
@@ -105,7 +105,7 @@ const Kasir = () => {
             </div>
           </div>
           
-          {/* Search Bar Fleksibel */}
+          {/* Search Bar */}
           <div className="relative w-full sm:w-64 lg:w-80">
             <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
             <input 
@@ -117,9 +117,8 @@ const Kasir = () => {
           </div>
         </div>
 
-        {/* List Menu (Scrollable) */}
+        {/* List Menu */}
         <div className="flex-1 overflow-y-auto p-3 md:p-5 lg:p-6 bg-gray-50/50">
-          {/* Grid Responsif: 2 kolom di HP, 3 di Tablet, 4 di Laptop Kecil, 5 di Layar Besar */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-5">
             {filteredMenus.map((menu) => (
               <button 
@@ -153,7 +152,7 @@ const Kasir = () => {
       {/* ================= AREA KANAN: KERANJANG ================= */}
       <div className="w-full md:w-[40%] lg:w-[28%] h-[45dvh] md:h-full bg-white shadow-[0_-10px_30px_rgba(0,0,0,0.06)] md:shadow-[-10px_0_30px_rgba(0,0,0,0.04)] flex flex-col z-20 md:border-l border-gray-200">
         
-        {/* Header Keranjang (Sticky) */}
+        {/* Header Keranjang */}
         <div className="p-3 md:p-5 lg:p-6 border-b border-gray-100 flex justify-between items-center shrink-0 bg-gray-50/50">
           <div className="flex items-center gap-2 lg:gap-3 text-doabunda-dark">
             <ShoppingCart size={18} className="lg:w-5 lg:h-5" />
@@ -165,8 +164,8 @@ const Kasir = () => {
           </button>
         </div>
 
-        {/* List Keranjang (Scrollable) */}
-        <div className="flex-1 overflow-y-auto p-3 md:p-5 lg:p-6 space-y-2 lg:space-y-3">
+        {/* List Keranjang Dinamis */}
+        <div className="flex-1 overflow-y-auto p-3 md:p-5 lg:p-6 space-y-3">
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-300 opacity-80 space-y-3">
               <ShoppingCart size={40} strokeWidth={1.5} />
@@ -174,22 +173,49 @@ const Kasir = () => {
             </div>
           ) : (
             cart.map((item) => (
-              <div key={item.id} className="flex justify-between items-center p-3 lg:p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-gray-200 transition-colors">
-                <div className="flex-1 pr-2 lg:pr-4">
-                  <p className="font-bold text-gray-800 text-[11px] lg:text-xs leading-snug">{item.name}</p>
-                  <p className="text-[10px] lg:text-[11px] text-gray-500 mt-1 font-medium">
-                    Rp {item.price.toLocaleString('id-ID')} <span className="text-gray-400 mx-1">x</span> <span className="font-bold text-gray-700">{item.qty}</span>
+              <div key={item.id} className="flex flex-col p-3 lg:p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-gray-200 transition-colors gap-3">
+                
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 pr-2">
+                    <p className="font-bold text-gray-800 text-[11px] lg:text-xs leading-snug">{item.name}</p>
+                    <p className="text-[10px] lg:text-[11px] text-gray-500 mt-1 font-medium">
+                      Rp {item.price.toLocaleString('id-ID')} / porsi
+                    </p>
+                  </div>
+                  <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500 transition-colors p-1">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                
+                {/* Kontrol Jumlah & Subtotal */}
+                <div className="flex justify-between items-center mt-1 border-t border-gray-50 pt-2">
+                  <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border border-gray-100">
+                    <button 
+                      onClick={() => decreaseQuantity(item.id)} 
+                      className="p-1.5 bg-white text-gray-600 rounded-md shadow-sm hover:text-doabunda-primary hover:border-doabunda-primary border border-transparent transition-all active:scale-95"
+                    >
+                      <Minus size={14} strokeWidth={3} />
+                    </button>
+                    <span className="font-black text-xs w-4 text-center text-gray-800">{item.qty}</span>
+                    <button 
+                      onClick={() => increaseQuantity(item.id)} 
+                      className="p-1.5 bg-white text-gray-600 rounded-md shadow-sm hover:text-emerald-600 hover:border-emerald-600 border border-transparent transition-all active:scale-95"
+                    >
+                      <Plus size={14} strokeWidth={3} />
+                    </button>
+                  </div>
+                  
+                  <p className="font-black text-doabunda-dark text-xs lg:text-sm whitespace-nowrap">
+                    Rp {(item.price * item.qty).toLocaleString('id-ID')}
                   </p>
                 </div>
-                <p className="font-black text-doabunda-dark text-xs lg:text-sm whitespace-nowrap">
-                  Rp {(item.price * item.qty).toLocaleString('id-ID')}
-                </p>
+
               </div>
             ))
           )}
         </div>
 
-        {/* Footer Checkout (Sticky Bottom) */}
+        {/* Footer Checkout */}
         <div className="p-4 md:p-5 lg:p-6 bg-white border-t border-gray-100 shrink-0 shadow-[0_-5px_15px_rgba(0,0,0,0.02)]">
           <div className="flex justify-between items-end mb-4 lg:mb-5">
             <span className="text-[10px] lg:text-xs font-bold text-gray-400 uppercase tracking-widest">Total Tagihan</span>
