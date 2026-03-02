@@ -36,14 +36,8 @@ app.use('/api/rekap', rekapRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 
-// Error Handler Global untuk mendeteksi error detail di Log Vercel
-app.use((err, req, res, next) => {
-    console.error("DETAIL ERROR:", err.stack);
-    res.status(500).json({ 
-        success: false, 
-        message: 'Terjadi kesalahan pada server', 
-        error: err.message 
-    });
+app.use('*', (req, res) => {
+    res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
 });
 
 if (process.env.NODE_ENV !== 'production') {
