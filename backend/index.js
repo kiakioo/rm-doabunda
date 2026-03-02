@@ -1,4 +1,3 @@
-const express = require('express');
 const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
@@ -12,32 +11,32 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Root endpoint untuk cek status
 app.get('/', (req, res) => {
   res.json({ 
     message: 'API RM DOA BUNDA Berjalan!',
-    status: 'Online',
-    time: new Date().toISOString()
+    status: 'Online'
   });
 });
 
-// Gunakan path.join agar Vercel di Linux tidak gagal menemukan file
 const authRoutes = require(path.join(__dirname, 'routes/authRoutes'));
 const menuRoutes = require(path.join(__dirname, 'routes/menuRoutes'));
 const transaksiRoutes = require(path.join(__dirname, 'routes/transaksiRoutes'));
 const rekapRoutes = require(path.join(__dirname, 'routes/rekapRoutes'));
 const userRoutes = require(path.join(__dirname, 'routes/userRoutes'));
-const expenseRoutes = require(path.join(__dirname, 'routes/expenseRoutes'));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/transactions', transaksiRoutes);
 app.use('/api/rekap', rekapRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/expenses', expenseRoutes);
 
-app.use('*', (req, res) => {
-    res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
+app.use((err, req, res, next) => {
+    console.error("DETAIL ERROR:", err.stack);
+    res.status(500).json({ 
+        success: false, 
+        message: 'Server Error', 
+        error: err.message 
+    });
 });
 
 if (process.env.NODE_ENV !== 'production') {
