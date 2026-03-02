@@ -4,7 +4,6 @@ require('dotenv').config();
 
 const app = express();
 
-// 🛠️ KONFIGURASI CORS: Sudah benar, menjaga kredensial tetap aman di Vercel
 const allowedOrigins = [
   'https://rm-doabunda1.vercel.app', // Domain Frontend Anda
   'http://localhost:5173'           // Local development (Vite)
@@ -12,7 +11,6 @@ const allowedOrigins = [
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Izinkan request tanpa origin (seperti mobile apps, Postman, atau curl)
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
             return callback(new Error('CORS Policy: Origin not allowed'), false);
@@ -26,7 +24,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// Rute Cek Kesehatan: Sangat berguna untuk monitoring Vercel
+// Rute Cek Kesehatan
 app.get('/api/health', (req, res) => {
   res.json({ 
     message: 'API RM DOA BUNDA Berjalan Normal!',
@@ -51,9 +49,9 @@ app.use('/api/rekap', rekapRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 
-// PERBAIKAN: Penanganan 404 Khusus API
-// Ini mencegah rute non-API (seperti favicon atau rute frontend) ikut terkena error JSON
-app.use('/api/*', (req, res) => {
+// 🛠️ PERBAIKAN ERROR VERCEL (EXPRESS 5.x)
+// Mengubah '/api/*' menjadi '/api/(.*)' 
+app.use('/api/(.*)', (req, res) => {
     res.status(404).json({ 
         success: false, 
         message: `Endpoint API ${req.originalUrl} tidak ditemukan.` 
@@ -67,7 +65,6 @@ app.use((err, req, res, next) => {
     res.status(statusCode).json({ 
         success: false, 
         message: statusCode === 500 ? 'Internal Server Error' : err.message,
-        // Error detail hanya muncul saat development untuk keamanan
         error: process.env.NODE_ENV === 'development' ? err.message : undefined 
     });
 });
@@ -78,4 +75,5 @@ if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
 
+// WAJIB UNTUK VERCEL
 module.exports = app;
