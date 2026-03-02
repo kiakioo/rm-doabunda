@@ -14,14 +14,23 @@ const generateDailyRecap = async (req, res) => {
         const today = dateLocal.toISOString().slice(0, 10);
 
         // 1. Ambil Total Pengeluaran hari ini
+        // Menggunakan DATE() agar sinkron dengan format YYYY-MM-DD
         const [expenseResult] = await db.query(
-            'SELECT SUM(amount) as total FROM expenses WHERE DATE(created_at) = ?',
+            'SELECT SUM(amount) as total FROM expenses WHERE DATE(expense_date) = ?',
             [today]
         );
         const totalExpense = expenseResult[0]?.total ? parseFloat(expenseResult[0].total) : 0;
 
-        // 2. Ambil Ringkasan Transaksi dari Model
+        // 2. Ambil Ringkasan Transaksi & Total Struk dari database
         const summary = await Rekap.getSummaryByDate(today);
+        
+        // LOGIKA TAMBAHAN: Mengambil total count transaksi agar struk tidak nol di laporan
+        const [countResult] = await db.query(
+            'SELECT COUNT(id) as total_count FROM transactions WHERE DATE(created_at) = ?',
+            [today]
+        );
+        const totalTransactions = countResult[0]?.total_count || 0;
+
         let totalCash = 0; let totalQris = 0; let totalGrab = 0;
 
         summary.forEach(item => {
@@ -33,27 +42,25 @@ const generateDailyRecap = async (req, res) => {
         const totalRevenue = totalCash + totalQris + totalGrab;
 
         // 3. Simpan atau Update jika sudah ada (Upsert Logic)
-        // Menghitung laba bersih: (Pendapatan + Extra) - Pengeluaran
-        // Note: net_profit akan dihitung ulang di sini, 
-        // namun tetap mempertahankan extra_income yang mungkin sudah diinput sebelumnya.
-        
+        // Pastikan total_transactions masuk ke query agar laporan keuangan lengkap
         const query = `
             INSERT INTO daily_recaps 
-            (admin_id, recap_date, total_cash, total_qris, total_grab, total_revenue, total_expense, net_profit) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (admin_id, recap_date, total_cash, total_qris, total_grab, total_revenue, total_expense, total_transactions, net_profit) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE 
             total_cash = VALUES(total_cash),
             total_qris = VALUES(total_qris),
             total_grab = VALUES(total_grab),
             total_revenue = VALUES(total_revenue),
             total_expense = VALUES(total_expense),
+            total_transactions = VALUES(total_transactions),
             net_profit = (VALUES(total_revenue) + extra_income) - VALUES(total_expense)
         `;
 
         const netProfitInitial = totalRevenue - totalExpense;
 
         await db.query(query, [
-            adminId, today, totalCash, totalQris, totalGrab, totalRevenue, totalExpense, netProfitInitial
+            adminId, today, totalCash, totalQris, totalGrab, totalRevenue, totalExpense, totalTransactions, netProfitInitial
         ]);
 
         res.json({ success: true, message: 'Tutup buku harian berhasil diproses dan disinkronkan!' });
