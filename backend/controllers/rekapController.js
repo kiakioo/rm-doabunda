@@ -8,23 +8,22 @@ const generateDailyRecap = async (req, res) => {
     try {
         const adminId = req.user.id;
         
-        // Penentuan Tanggal Lokal (YYYY-MM-DD)
+        // Penentuan Tanggal Lokal (YYYY-MM-DD) agar sinkron dengan database
         const dateLocal = new Date();
         dateLocal.setMinutes(dateLocal.getMinutes() - dateLocal.getTimezoneOffset());
         const today = dateLocal.toISOString().slice(0, 10);
 
-        // 1. Ambil Total Pengeluaran hari ini
-        // Menggunakan DATE() agar sinkron dengan format YYYY-MM-DD
+        // 1. Ambil Total Pengeluaran hari ini dari tabel expenses
         const [expenseResult] = await db.query(
             'SELECT SUM(amount) as total FROM expenses WHERE DATE(expense_date) = ?',
             [today]
         );
         const totalExpense = expenseResult[0]?.total ? parseFloat(expenseResult[0].total) : 0;
 
-        // 2. Ambil Ringkasan Transaksi & Total Struk dari database
+        // 2. Ambil Ringkasan Transaksi per metode pembayaran
         const summary = await Rekap.getSummaryByDate(today);
         
-        // LOGIKA TAMBAHAN: Mengambil total count transaksi agar struk tidak nol di laporan
+        // 3. Ambil total count transaksi (struk) agar data tidak nol di laporan
         const [countResult] = await db.query(
             'SELECT COUNT(id) as total_count FROM transactions WHERE DATE(created_at) = ?',
             [today]
@@ -41,8 +40,7 @@ const generateDailyRecap = async (req, res) => {
 
         const totalRevenue = totalCash + totalQris + totalGrab;
 
-        // 3. Simpan atau Update jika sudah ada (Upsert Logic)
-        // Pastikan total_transactions masuk ke query agar laporan keuangan lengkap
+        // 4. Simpan atau Update jika sudah ada (Upsert Logic)
         const query = `
             INSERT INTO daily_recaps 
             (admin_id, recap_date, total_cash, total_qris, total_grab, total_revenue, total_expense, total_transactions, net_profit) 
@@ -59,17 +57,8 @@ const generateDailyRecap = async (req, res) => {
 
         const netProfitInitial = totalRevenue - totalExpense;
 
-        // Eksekusi Upsert
         await db.query(query, [
-            adminId, 
-            today, 
-            totalCash, 
-            totalQris, 
-            totalGrab, 
-            totalRevenue, 
-            totalExpense, 
-            totalTransactions, 
-            netProfitInitial
+            adminId, today, totalCash, totalQris, totalGrab, totalRevenue, totalExpense, totalTransactions, netProfitInitial
         ]);
 
         res.json({ success: true, message: 'Tutup buku harian berhasil diproses dan disinkronkan!' });
@@ -84,12 +73,12 @@ const generateDailyRecap = async (req, res) => {
 // 2. UPDATE EXTRA INCOME (Dana Tambahan)
 // ===============================
 const updateExtraIncome = async (req, res) => {
-    const { amount, date } = req.body; // 'note' bisa ditambahkan jika ada kolomnya di tabel
+    const { amount, date } = req.body; 
     try {
         const valAmount = parseFloat(amount) || 0;
         
         // Update extra income dan hitung ulang net_profit secara otomatis
-        // Rumus: (revenue + extra_income baru) - expense
+        // Rumus: (revenue + extra_income) - expense
         const [result] = await db.query(
             `UPDATE daily_recaps 
              SET extra_income = extra_income + ?, 
@@ -142,7 +131,6 @@ const getSummary = async (req, res) => {
 // ===============================
 const getHistory = async (req, res) => {
     try {
-        // Mengambil histori dari tabel daily_recaps
         const [rows] = await db.query('SELECT * FROM daily_recaps ORDER BY recap_date DESC');
         res.json({ data: rows });
     } catch (error) {
