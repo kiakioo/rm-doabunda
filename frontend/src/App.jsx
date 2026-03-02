@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 
 import Login from './pages/Login';
 import Kasir from './pages/Kasir';
-import KasirDashboard from './pages/KasirDashboard'; // TAMBAHAN
+import KasirDashboard from './pages/KasirDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import KelolaMenu from './pages/KelolaMenu';
 import RekapHarian from './pages/RekapHarian';
@@ -12,28 +12,37 @@ import Pengeluaran from './pages/Pengeluaran';
 import HistoryTransaksi from './pages/HistoryTransaksi';
 import Laporan from './pages/Laporan';
 
-// 🔒 Cek Login
+// 🔒 Cek Login: Pastikan token ada
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   return token ? children : <Navigate to="/" />;
 };
 
-// 🔐 Cek Role
+// 🔐 Cek Role: Perbaikan logika agar tidak saling bentrok
 const RoleRoute = ({ children, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem('user'));
+
   if (!user) return <Navigate to="/" />;
-  return allowedRoles.includes(user.role) ? children : <Navigate to="/kasir/dashboard" />;
+
+  // Jika role user tidak ada di daftar yang diizinkan
+  if (!allowedRoles.includes(user.role)) {
+    // Kembalikan ke dashboard masing-masing, jangan dicampur
+    return user.role === 'admin' 
+      ? <Navigate to="/admin" /> 
+      : <Navigate to="/kasir/dashboard" />;
+  }
+
+  return children;
 };
 
 function App() {
   return (
     <Router>
       <Routes>
-
+        {/* Halaman Login */}
         <Route path="/" element={<Login />} />
 
-        {/* ===================== KASIR + ADMIN ===================== */}
-        {/* TAMBAHAN RUTE DASHBOARD KASIR */}
+        {/* ===================== AREA KASIR (Kasir & Admin bisa akses) ===================== */}
         <Route 
           path="/kasir/dashboard" 
           element={
@@ -57,17 +66,6 @@ function App() {
         />
 
         <Route 
-          path="/kelola-menu" 
-          element={
-            <PrivateRoute>
-              <RoleRoute allowedRoles={['admin', 'kasir']}>
-                <KelolaMenu />
-              </RoleRoute>
-            </PrivateRoute>
-          } 
-        />
-
-        <Route 
           path="/kasir/laporan" 
           element={
             <PrivateRoute>
@@ -78,13 +76,24 @@ function App() {
           }
         />
 
-        {/* ===================== ADMIN ONLY ===================== */}
+        {/* ===================== AREA ADMIN (HANYA Admin) ===================== */}
         <Route 
           path="/admin" 
           element={
             <PrivateRoute>
               <RoleRoute allowedRoles={['admin']}>
                 <AdminDashboard />
+              </RoleRoute>
+            </PrivateRoute>
+          } 
+        />
+
+        <Route 
+          path="/kelola-menu" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin']}>
+                <KelolaMenu />
               </RoleRoute>
             </PrivateRoute>
           } 
@@ -134,17 +143,19 @@ function App() {
           }
         />
 
+        {/* ===================== LAIN-LAIN ===================== */}
         <Route 
           path="/history-transaksi" 
           element={
             <PrivateRoute>
-              <HistoryTransaksi />
+              <RoleRoute allowedRoles={['admin']}>
+                <HistoryTransaksi />
+              </RoleRoute>
             </PrivateRoute>
           } 
         />
 
         <Route path="*" element={<Navigate to="/" />} />
-
       </Routes>
     </Router>
   );
