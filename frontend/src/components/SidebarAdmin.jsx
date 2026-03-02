@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, MonitorSmartphone, Utensils, FileText, Wallet, Users, Receipt } from 'lucide-react';
 
 const SidebarAdmin = () => {
   const location = useLocation();
@@ -12,15 +13,15 @@ const SidebarAdmin = () => {
     navigate('/'); // Kembali ke halaman Login
   };
 
-  // Daftar Menu untuk Admin
-  const menuItems = [
-    { path: '/admin', label: 'Ringkasan', icon: '📊' },
-    { path: '/kasir', label: 'Buka Kasir', icon: '💻' },
-    { path: '/kelola-menu', label: 'Menu', icon: '🍽️' },
-    { path: '/admin/laporan', label: 'Laporan', icon: '📄' },
-    { path: '/pengeluaran', label: 'Pengeluaran', icon: '💰' },
-    { path: '/manajemen-user', label: 'Karyawan', icon: '👥' }
-  ];
+const menuItems = [
+  { path: '/admin', label: 'Ringkasan', icon: <LayoutDashboard size={20}/> },
+  { path: '/kasir', label: 'Buka Kasir', icon: <MonitorSmartphone size={20}/> },
+  { path: '/kelola-menu', label: 'Menu', icon: <Utensils size={20}/> },
+  { path: '/history-transaksi', label: 'Riwayat Transaksi', icon: <Receipt size={20}/> }, // Riwayat dipisah
+  { path: '/admin/laporan', label: 'Laporan Keuangan', icon: <FileText size={20}/> },
+  { path: '/pengeluaran', label: 'Pengeluaran', icon: <Wallet size={20}/> },
+  { path: '/manajemen-user', label: 'Karyawan', icon: <Users size={20}/> }
+];
 
   return (
     <div style={{ width: '250px', backgroundColor: '#8B0000', color: 'white', display: 'flex', flexDirection: 'column', minHeight: '100vh', flexShrink: 0 }}>
