@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import SidebarKasir from '../components/SidebarKasir';
-import { TrendingUp, Receipt, Clock, ChevronRight } from 'lucide-react';
+// Ikon MonitorSmartphone SUDAH DITAMBAHKAN DI SINI 👇
+import { TrendingUp, Receipt, Clock, ChevronRight, MonitorSmartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const KasirDashboard = () => {
@@ -27,7 +28,6 @@ const KasirDashboard = () => {
         totalTransactions: transactions.length
       });
 
-      // Ambil 5 transaksi teratas untuk ditampilkan
       setRecentTransactions(transactions.slice(0, 5));
     } catch (error) {
       console.error("Gagal mengambil data statistik kasir", error);
@@ -44,10 +44,8 @@ const KasirDashboard = () => {
       
       <SidebarKasir />
 
-      {/* KONTEN UTAMA */}
       <div className="flex-1 p-5 md:p-10 overflow-y-auto">
         
-        {/* HEADER */}
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row justify-between items-center gap-6 bg-gradient-to-r from-white to-red-50/30">
           <div>
             <h1 className="text-3xl md:text-4xl font-black text-gray-800 mb-2">
@@ -64,7 +62,6 @@ const KasirDashboard = () => {
           </button>
         </div>
 
-        {/* KARTU STATISTIK */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-gradient-to-br from-red-50 to-white p-8 rounded-3xl shadow-sm border border-red-100 flex flex-col justify-center transform hover:-translate-y-1 transition-all duration-300">
             <div className="flex items-center gap-3 mb-4 text-red-800">
@@ -87,7 +84,6 @@ const KasirDashboard = () => {
           </div>
         </div>
 
-        {/* TABEL TRANSAKSI KASIR */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-6 md:p-8 border-b border-gray-100 flex justify-between items-center">
             <div className="flex items-center gap-3">
