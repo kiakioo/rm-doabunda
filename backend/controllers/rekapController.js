@@ -59,8 +59,17 @@ const generateDailyRecap = async (req, res) => {
 
         const netProfitInitial = totalRevenue - totalExpense;
 
+        // Eksekusi Upsert
         await db.query(query, [
-            adminId, today, totalCash, totalQris, totalGrab, totalRevenue, totalExpense, totalTransactions, netProfitInitial
+            adminId, 
+            today, 
+            totalCash, 
+            totalQris, 
+            totalGrab, 
+            totalRevenue, 
+            totalExpense, 
+            totalTransactions, 
+            netProfitInitial
         ]);
 
         res.json({ success: true, message: 'Tutup buku harian berhasil diproses dan disinkronkan!' });
@@ -75,11 +84,12 @@ const generateDailyRecap = async (req, res) => {
 // 2. UPDATE EXTRA INCOME (Dana Tambahan)
 // ===============================
 const updateExtraIncome = async (req, res) => {
-    const { amount, note, date } = req.body;
+    const { amount, date } = req.body; // 'note' bisa ditambahkan jika ada kolomnya di tabel
     try {
         const valAmount = parseFloat(amount) || 0;
         
         // Update extra income dan hitung ulang net_profit secara otomatis
+        // Rumus: (revenue + extra_income baru) - expense
         const [result] = await db.query(
             `UPDATE daily_recaps 
              SET extra_income = extra_income + ?, 
@@ -95,7 +105,7 @@ const updateExtraIncome = async (req, res) => {
             });
         }
 
-        res.json({ success: true, message: `Dana tambahan sebesar Rp ${valAmount.toLocaleString()} berhasil dicatat.` });
+        res.json({ success: true, message: `Dana tambahan sebesar Rp ${valAmount.toLocaleString('id-ID')} berhasil dicatat.` });
     } catch (error) {
         console.error("EXTRA INCOME ERROR:", error);
         res.status(500).json({ success: false, message: 'Gagal menambahkan dana masuk tambahan' });
@@ -132,9 +142,11 @@ const getSummary = async (req, res) => {
 // ===============================
 const getHistory = async (req, res) => {
     try {
+        // Mengambil histori dari tabel daily_recaps
         const [rows] = await db.query('SELECT * FROM daily_recaps ORDER BY recap_date DESC');
         res.json({ data: rows });
     } catch (error) {
+        console.error("GET HISTORY ERROR:", error);
         res.status(500).json({ message: 'Gagal mengambil arsip rekap' });
     }
 };
@@ -145,6 +157,7 @@ const deleteRekap = async (req, res) => {
         await db.query('DELETE FROM daily_recaps WHERE id = ?', [id]);
         res.json({ success: true, message: 'Data laporan berhasil dihapus' });
     } catch (error) {
+        console.error("DELETE REKAP ERROR:", error);
         res.status(500).json({ message: 'Gagal menghapus laporan' });
     }
 };
