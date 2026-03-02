@@ -40,7 +40,7 @@ const Login = () => {
       // Redirect sesuai role
       setTimeout(() => {
           if (response.data.user.role === 'admin') navigate('/admin');
-          else navigate('/kasir');
+          else navigate('/kasir/dashboard');
       }, 1500);
 
     } catch (error) {
