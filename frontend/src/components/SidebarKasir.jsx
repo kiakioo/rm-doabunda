@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-const SidebarAdmin = () => {
+const SidebarKasir = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -9,17 +9,13 @@ const SidebarAdmin = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/'); // Kembali ke halaman Login
+    navigate('/');
   };
 
-  // Daftar Menu untuk Admin
+  // Daftar Menu untuk Kasir (Lebih sedikit daripada Admin)
   const menuItems = [
-    { path: '/admin', label: 'Ringkasan', icon: '📊' },
     { path: '/kasir', label: 'Buka Kasir', icon: '💻' },
-    { path: '/kelola-menu', label: 'Menu', icon: '🍽️' },
-    { path: '/admin/laporan', label: 'Laporan', icon: '📄' },
-    { path: '/pengeluaran', label: 'Pengeluaran', icon: '💰' },
-    { path: '/manajemen-user', label: 'Karyawan', icon: '👥' }
+    { path: '/kasir/laporan', label: 'Riwayat Transaksi', icon: '📄' },
   ];
 
   return (
@@ -27,13 +23,12 @@ const SidebarAdmin = () => {
       {/* Header / Logo */}
       <div style={{ padding: '30px 20px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <h2 style={{ color: '#F1C40F', margin: 0, letterSpacing: '2px' }}>DOA BUNDA</h2>
-        <p style={{ fontSize: '11px', color: '#ccc', margin: '5px 0 0 0', letterSpacing: '1px' }}>ADMINISTRATOR PANEL</p>
+        <p style={{ fontSize: '11px', color: '#ccc', margin: '5px 0 0 0', letterSpacing: '1px' }}>KASIR PANEL</p>
       </div>
 
       {/* Navigasi Menu */}
       <nav style={{ flex: 1, padding: '20px 10px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
         {menuItems.map((item) => {
-          // Deteksi apakah menu ini sedang aktif (sedang dibuka)
           const isActive = location.pathname === item.path;
           return (
             <Link 
@@ -47,7 +42,7 @@ const SidebarAdmin = () => {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '15px',
-                backgroundColor: isActive ? '#C0392B' : 'transparent', // Warna merah lebih terang jika aktif
+                backgroundColor: isActive ? '#C0392B' : 'transparent',
                 transition: '0.3s'
               }}
             >
@@ -75,5 +70,4 @@ const SidebarAdmin = () => {
   );
 };
 
-// WAJIB ADA INI: Agar error "default is not exported" musnah!
-export default SidebarAdmin;
+export default SidebarKasir;

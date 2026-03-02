@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-// HANYA IMPORT SIDEBAR YANG ADA
 import SidebarAdmin from '../components/SidebarAdmin';
+import SidebarKasir from '../components/SidebarKasir';
 
 const Laporan = () => {
   const [transactions, setTransactions] = useState([]);
@@ -52,10 +52,9 @@ const Laporan = () => {
     // Struktur Layout Flexbox untuk menampung Sidebar di kiri dan Konten di kanan
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       
-      {/* TAMPILKAN SIDEBAR HANYA UNTUK ADMIN.
-        Jika Kasir yang login, bagian ini akan kosong (otomatis full-width).
-      */}
+      {/* Deteksi Role untuk Sidebar */}
       {user.role === 'admin' && <SidebarAdmin />}
+      {user.role === 'kasir' && <SidebarKasir />}
 
       {/* Konten Utama Laporan */}
       <div style={{ padding: '30px', fontFamily: 'sans-serif', flex: 1, backgroundColor: '#fff', borderRadius: '8px', margin: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
