@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, MonitorSmartphone, Receipt, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, MonitorSmartphone, Receipt, Utensils, LogOut, Menu, X } from 'lucide-react';
 
 const SidebarKasir = () => {
   const location = useLocation();
@@ -15,6 +15,7 @@ const SidebarKasir = () => {
   const menuItems = [
     { path: '/kasir/dashboard', label: 'Ringkasan', icon: <LayoutDashboard size={20} /> },
     { path: '/kasir', label: 'Buka Kasir', icon: <MonitorSmartphone size={20} /> },
+    { path: '/kelola-menu', label: 'Kelola Menu', icon: <Utensils size={20} /> }, // FITUR BARU UNTUK KASIR
     { path: '/history-transaksi', label: 'Riwayat Transaksi', icon: <Receipt size={20} /> },
   ];
 
@@ -65,4 +66,5 @@ const SidebarKasir = () => {
     </>
   );
 };
+
 export default SidebarKasir;

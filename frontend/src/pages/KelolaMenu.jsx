@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Plus, Trash2, Edit2, Utensils, X } from 'lucide-react';
 import Swal from 'sweetalert2';
+
+// Import kedua Sidebar
 import SidebarAdmin from '../components/SidebarAdmin';
+import SidebarKasir from '../components/SidebarKasir';
 
 const KelolaMenu = () => {
   const [menus, setMenus] = useState([]);
   const [form, setForm] = useState({ name: '', category: 'Makanan', price: '' });
-  const [editingId, setEditingId] = useState(null); // State untuk melacak menu yang sedang diedit
+  const [editingId, setEditingId] = useState(null);
+
+  // Ambil data user yang sedang login untuk mengecek role
+  const user = JSON.parse(localStorage.getItem('user')) || {};
 
   useEffect(() => { fetchMenus(); }, []);
 
@@ -24,12 +30,10 @@ const KelolaMenu = () => {
     e.preventDefault();
     try {
       if (editingId) {
-        // Logika UPDATE jika sedang mode Edit
         await api.put(`/menus/${editingId}`, form);
         Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data menu diperbarui', confirmButtonColor: '#BF3131' });
         setEditingId(null);
       } else {
-        // Logika CREATE jika mode Tambah Baru
         await api.post('/menus', form);
         Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Menu ditambahkan', confirmButtonColor: '#BF3131' });
       }
@@ -40,13 +44,11 @@ const KelolaMenu = () => {
     }
   };
 
-  // Fungsi saat tombol Edit ditekan
   const handleEdit = (menu) => {
     setForm({ name: menu.name, category: menu.category, price: menu.price });
     setEditingId(menu.id);
   };
 
-  // Fungsi untuk membatalkan proses Edit
   const cancelEdit = () => {
     setForm({ name: '', category: 'Makanan', price: '' });
     setEditingId(null);
@@ -73,7 +75,9 @@ const KelolaMenu = () => {
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 font-sans w-full">
-      <SidebarAdmin />
+      
+      {/* MENAMPILKAN SIDEBAR SECARA CERDAS BERDASARKAN ROLE */}
+      {user.role === 'admin' ? <SidebarAdmin /> : <SidebarKasir />}
 
       <div className="flex-1 p-4 pt-20 md:p-8 md:pt-8 w-full overflow-x-hidden">
         
@@ -81,13 +85,12 @@ const KelolaMenu = () => {
           <Utensils className="text-doabunda-primary" size={32} />
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-wide uppercase">KELOLA MENU</h1>
-            <p className="text-gray-500 text-sm mt-1">Atur daftar makanan, kategori, dan harga untuk Kasir.</p>
+            <p className="text-gray-500 text-sm mt-1">Atur daftar makanan, kategori, dan harga.</p>
           </div>
         </header>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
           
-          {/* ================= FORM TAMBAH / EDIT MENU ================= */}
           <div className={`p-5 md:p-6 rounded-2xl shadow-sm h-fit border border-gray-100 border-t-8 transition-all ${editingId ? 'bg-blue-50 border-t-blue-500' : 'bg-white border-t-doabunda-primary'}`}>
             <h2 className={`text-lg md:text-xl font-black mb-4 flex items-center gap-2 ${editingId ? 'text-blue-700' : 'text-doabunda-dark'}`}>
               {editingId ? <Edit2 size={20} /> : <Plus size={20} />}
@@ -126,7 +129,6 @@ const KelolaMenu = () => {
             </form>
           </div>
 
-          {/* ================= TABEL MENU ================= */}
           <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="overflow-x-auto w-full">
               <table className="w-full text-left min-w-[600px]">
@@ -151,20 +153,10 @@ const KelolaMenu = () => {
                         Rp {Number(menu.price).toLocaleString('id-ID')}
                       </td>
                       <td className="p-4 flex justify-center gap-2">
-                        {/* Tombol Edit */}
-                        <button 
-                          onClick={() => handleEdit(menu)} 
-                          className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-all"
-                          title="Edit Menu"
-                        >
+                        <button onClick={() => handleEdit(menu)} className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition-all" title="Edit Menu">
                           <Edit2 size={18} />
                         </button>
-                        {/* Tombol Hapus */}
-                        <button 
-                          onClick={() => deleteMenu(menu.id)} 
-                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                          title="Hapus Menu"
-                        >
+                        <button onClick={() => deleteMenu(menu.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Hapus Menu">
                           <Trash2 size={18} />
                         </button>
                       </td>

@@ -20,6 +20,8 @@ const PrivateRoute = ({ children }) => {
 const RoleRoute = ({ children, allowedRoles }) => {
   const user = JSON.parse(localStorage.getItem('user'));
   if (!user) return <Navigate to="/" />;
+  
+  // Jika role user tidak ada di daftar allowedRoles, lempar kembali ke beranda masing-masing
   if (!allowedRoles.includes(user.role)) {
     return user.role === 'admin' ? <Navigate to="/admin" /> : <Navigate to="/kasir/dashboard" />;
   }
@@ -32,19 +34,25 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
 
-        {/* AREA BERSAMA (Admin & Kasir) */}
+        {/* ========================================================= */}
+        {/* AREA BERSAMA (Bisa diakses oleh Admin & Kasir) */}
+        {/* ========================================================= */}
         <Route path="/kasir/dashboard" element={<PrivateRoute><RoleRoute allowedRoles={['admin', 'kasir']}><KasirDashboard /></RoleRoute></PrivateRoute>} />
         <Route path="/kasir" element={<PrivateRoute><RoleRoute allowedRoles={['admin', 'kasir']}><Kasir /></RoleRoute></PrivateRoute>} />
         <Route path="/history-transaksi" element={<PrivateRoute><RoleRoute allowedRoles={['admin', 'kasir']}><HistoryTransaksi /></RoleRoute></PrivateRoute>} />
+        <Route path="/kelola-menu" element={<PrivateRoute><RoleRoute allowedRoles={['admin', 'kasir']}><KelolaMenu /></RoleRoute></PrivateRoute>} />
 
-        {/* AREA KHUSUS ADMIN */}
+
+        {/* ========================================================= */}
+        {/* AREA KHUSUS ADMIN (Kasir dilarang masuk ke sini) */}
+        {/* ========================================================= */}
         <Route path="/admin" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><AdminDashboard /></RoleRoute></PrivateRoute>} />
-        <Route path="/kelola-menu" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><KelolaMenu /></RoleRoute></PrivateRoute>} />
         <Route path="/rekap" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><RekapHarian /></RoleRoute></PrivateRoute>} />
         <Route path="/manajemen-user" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><ManajemenUser /></RoleRoute></PrivateRoute>} />
         <Route path="/pengeluaran" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><Pengeluaran /></RoleRoute></PrivateRoute>} />
         <Route path="/admin/laporan" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><Laporan /></RoleRoute></PrivateRoute>} />
 
+        {/* 404 Fallback - Jika URL ngawur, kembalikan ke halaman awal */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
