@@ -7,8 +7,10 @@ const db = require('../utils/db');
 const generateDailyRecap = async (req, res) => {
     try {
         const adminId = req.user.id;
+        
+        // Perbaikan Zona Waktu Vercel: Memaksa server Vercel (UTC) menjadi WITA (UTC+8)
         const dateLocal = new Date();
-        dateLocal.setMinutes(dateLocal.getMinutes() - dateLocal.getTimezoneOffset());
+        dateLocal.setHours(dateLocal.getHours() + 8);
         const today = dateLocal.toISOString().slice(0, 10);
 
         // Ambil Total Pengeluaran hari ini
@@ -16,24 +18,31 @@ const generateDailyRecap = async (req, res) => {
             'SELECT SUM(amount) as total FROM expenses WHERE DATE(expense_date) = ?',
             [today]
         );
-        const totalExpense = expenseResult[0]?.total ? parseFloat(expenseResult[0].total) : 0;
+        const totalExpense = parseFloat(expenseResult[0]?.total) || 0;
 
-        // Ambil Ringkasan Transaksi secara Real-time
-        const [trxSummary] = await db.query(
-            `SELECT 
-                COUNT(id) as totalTransactions, 
-                SUM(total_amount) as totalRevenue,
-                SUM(CASE WHEN payment_method = 'Cash' THEN total_amount ELSE 0 END) as totalCash,
-                SUM(CASE WHEN payment_method = 'QRIS' THEN total_amount ELSE 0 END) as totalQris,
-                SUM(CASE WHEN payment_method = 'Grab' THEN total_amount ELSE 0 END) as totalGrab
-             FROM transactions WHERE DATE(created_at) = ?`,
+        // MENGGUNAKAN MODEL REKAP: Ambil ringkasan berdasarkan metode pembayaran
+        const summary = await Rekap.getSummaryByDate(today);
+        
+        let totalCash = 0, totalQris = 0, totalGrab = 0, revenue = 0;
+        
+        summary.forEach(item => {
+            const amount = parseFloat(item.total) || 0;
+            revenue += amount;
+            if (item.payment_method === 'Cash') totalCash = amount;
+            if (item.payment_method === 'QRIS') totalQris = amount;
+            if (item.payment_method === 'Grab') totalGrab = amount;
+        });
+
+        // Ambil total count transaksi (struk) secara terpisah
+        const [countResult] = await db.query(
+            'SELECT COUNT(id) as totalTransactions FROM transactions WHERE DATE(created_at) = ?',
             [today]
         );
+        const totalTransactions = parseInt(countResult[0]?.totalTransactions, 10) || 0;
 
-        const { totalTransactions, totalRevenue, totalCash, totalQris, totalGrab } = trxSummary[0];
-        const revenue = parseFloat(totalRevenue) || 0;
+        const netProfitInitial = revenue - totalExpense;
 
-        // Logika UPSERT: Mengupdate jika tanggal sudah ada (butuh UNIQUE INDEX di DB)
+        // Logika UPSERT (Update jika recap_date sudah ada)
         const query = `
             INSERT INTO daily_recaps 
             (admin_id, recap_date, total_cash, total_qris, total_grab, total_revenue, total_expense, total_transactions, net_profit) 
@@ -45,27 +54,32 @@ const generateDailyRecap = async (req, res) => {
             total_revenue = VALUES(total_revenue),
             total_expense = VALUES(total_expense),
             total_transactions = VALUES(total_transactions),
-            net_profit = (VALUES(total_revenue) + extra_income) - VALUES(total_expense)
+            net_profit = (VALUES(total_revenue) + COALESCE(extra_income, 0)) - VALUES(total_expense)
         `;
 
         await db.query(query, [
-            adminId, today, totalCash || 0, totalQris || 0, totalGrab || 0, 
-            revenue, totalExpense, totalTransactions || 0, (revenue - totalExpense)
+            adminId, today, totalCash, totalQris, totalGrab, 
+            revenue, totalExpense, totalTransactions, netProfitInitial
         ]);
 
         res.json({ success: true, message: 'Tutup buku harian berhasil disinkronkan!' });
     } catch (error) {
         console.error("Generate recap error:", error);
-        res.status(500).json({ success: false, message: 'Gagal melakukan rekap harian' });
+        res.status(500).json({ success: false, message: 'Gagal melakukan rekap harian', error_detail: error.message });
     }
 };
 
 // ===============================
-// 2. ADD EXTRA INCOME (Uang Tambahan: Sisa Pasar, dll)
+// 2. ADD EXTRA INCOME (Sisa Pasar, dll)
 // ===============================
 const addExtraIncome = async (req, res) => {
     const { amount, source_name, date } = req.body;
-    const dateTarget = date || new Date().toISOString().slice(0, 10);
+    
+    // Pastikan mengikuti zona waktu lokal jika parameter date kosong
+    const dateLocal = new Date();
+    dateLocal.setHours(dateLocal.getHours() + 8);
+    const dateTarget = date || dateLocal.toISOString().slice(0, 10);
+    
     const valAmount = parseFloat(amount) || 0;
 
     let connection;
@@ -104,32 +118,48 @@ const addExtraIncome = async (req, res) => {
     }
 };
 
+// ===============================
+// 3. GET SUMMARY (Dashboard Admin)
+// ===============================
 const getSummary = async (req, res) => {
     try {
-        const today = new Date().toISOString().slice(0, 10);
+        const dateLocal = new Date();
+        dateLocal.setHours(dateLocal.getHours() + 8);
+        const today = dateLocal.toISOString().slice(0, 10);
+
         const [revenueResult] = await db.query(
             'SELECT SUM(total_amount) as totalRevenue, COUNT(id) as totalTransactions FROM transactions WHERE DATE(created_at) = ?',
             [today]
         );
         res.json({
             totalRevenue: parseFloat(revenueResult[0]?.totalRevenue) || 0,
-            totalTransactions: revenueResult[0]?.totalTransactions || 0
+            totalTransactions: parseInt(revenueResult[0]?.totalTransactions, 10) || 0
         });
-    } catch (error) { res.status(500).json({ message: 'Gagal ambil summary' }); }
+    } catch (error) { 
+        res.status(500).json({ message: 'Gagal ambil summary', error_detail: error.message }); 
+    }
 };
 
+// ===============================
+// 4. GET HISTORY & DELETE
+// ===============================
 const getHistory = async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM daily_recaps ORDER BY recap_date DESC');
+        // MENGGUNAKAN MODEL REKAP: Mengambil seluruh riwayat laporan keuangan
+        const rows = await Rekap.getHistory();
         res.json({ data: rows });
-    } catch (error) { res.status(500).json({ message: 'Gagal ambil histori' }); }
+    } catch (error) { 
+        res.status(500).json({ message: 'Gagal ambil histori', error_detail: error.message }); 
+    }
 };
 
 const deleteRekap = async (req, res) => {
     try {
         await db.query('DELETE FROM daily_recaps WHERE id = ?', [req.params.id]);
         res.json({ success: true, message: 'Data laporan berhasil dihapus' });
-    } catch (error) { res.status(500).json({ message: 'Gagal menghapus' }); }
+    } catch (error) { 
+        res.status(500).json({ message: 'Gagal menghapus laporan', error_detail: error.message }); 
+    }
 };
 
 module.exports = { generateDailyRecap, addExtraIncome, getSummary, getHistory, deleteRekap };

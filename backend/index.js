@@ -78,5 +78,4 @@ if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
 
-// WAJIB UNTUK VERCEL: Export app sebagai module
 module.exports = app;
