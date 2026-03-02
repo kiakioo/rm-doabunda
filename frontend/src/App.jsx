@@ -9,6 +9,7 @@ import RekapHarian from './pages/RekapHarian';
 import ManajemenUser from './pages/ManajemenUser';
 import Pengeluaran from './pages/Pengeluaran';
 import HistoryTransaksi from './pages/HistoryTransaksi';
+import Laporan from './pages/Laporan';
 
 // 🔒 Cek Login
 const PrivateRoute = ({ children }) => {
@@ -34,7 +35,7 @@ function App() {
 
         <Route path="/" element={<Login />} />
 
-        {/* KASIR + ADMIN */}
+        {/* ===================== KASIR + ADMIN ===================== */}
         <Route 
           path="/kasir" 
           element={
@@ -57,7 +58,18 @@ function App() {
           } 
         />
 
-        {/* ADMIN ONLY */}
+        <Route 
+          path="/kasir/laporan" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin', 'kasir']}>
+                <Laporan />
+              </RoleRoute>
+            </PrivateRoute>
+          }
+        />
+
+        {/* ===================== ADMIN ONLY ===================== */}
         <Route 
           path="/admin" 
           element={
@@ -102,12 +114,29 @@ function App() {
           } 
         />
 
-        <Route path="*" element={<Navigate to="/" />} />
-        
+        <Route 
+          path="/admin/laporan" 
+          element={
+            <PrivateRoute>
+              <RoleRoute allowedRoles={['admin']}>
+                <Laporan />
+              </RoleRoute>
+            </PrivateRoute>
+          }
+        />
+
+        {/* ===================== GENERAL / OTHERS ===================== */}
         <Route 
           path="/history-transaksi" 
-          element={<PrivateRoute><HistoryTransaksi /></PrivateRoute>} 
-/>
+          element={
+            <PrivateRoute>
+              <HistoryTransaksi />
+            </PrivateRoute>
+          } 
+        />
+
+        {/* Route Catch-all (Halaman tidak ditemukan) wajib di PALING BAWAH */}
+        <Route path="*" element={<Navigate to="/" />} />
 
       </Routes>
     </Router>
