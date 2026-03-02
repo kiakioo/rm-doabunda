@@ -4,11 +4,14 @@ require('dotenv').config();
 
 const app = express();
 
+// 🛠️ PERBAIKAN CORS: Menambahkan PATCH dan mendukung Credentials
 app.use(cors({
-    origin: '*', 
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    origin: '*', // Atau ganti dengan domain frontend spesifik Anda untuk keamanan lebih tinggi
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // WAJIB ADA PATCH
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
+
 app.use(express.json());
 
 // Rute Cek Kesehatan
@@ -31,25 +34,30 @@ const expenseRoutes = require('./routes/expenseRoutes');
 app.use('/api/auth', authRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/transactions', transaksiRoutes);
-app.use('/api/rekap', rekapRoutes);
+app.use('/api/rekap', rekapRoutes); // Pastikan di dalam rekapRoutes sudah ada router.patch('/extra-income', ...)
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 
-// Penanganan 404 (Tanda bintang '*' DIHAPUS agar kompatibel dengan Express 5)
+// Penanganan 404
 app.use((req, res) => {
-    res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
+    res.status(404).json({ 
+        success: false, 
+        message: `Endpoint ${req.originalUrl} tidak ditemukan pada server.` 
+    });
 });
 
 // Error Handler Global
 app.use((err, req, res, next) => {
     console.error("DETAIL ERROR:", err);
-    res.status(500).json({ 
+    res.status(err.status || 500).json({ 
         success: false, 
-        message: 'Server Error', 
+        message: 'Internal Server Error', 
         error: err.message 
     });
 });
 
+// Untuk deployment Vercel, server dijalankan secara otomatis. 
+// Blok listen hanya untuk development lokal.
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
