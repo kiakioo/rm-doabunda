@@ -73,13 +73,15 @@ const Laporan = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 font-sans w-full">
+    // 1. KUNCI HALAMAN: h-[100dvh] overflow-hidden (Mencegah scroll body keseluruhan)
+    <div className="flex h-[100dvh] bg-gray-50 font-sans w-full overflow-hidden">
       <SidebarAdmin />
       
-      {/* Container responsif */}
-      <div className="flex-1 p-4 pt-20 md:p-8 md:pt-8 w-full overflow-x-hidden">
+      {/* 2. AREA KONTEN: flex-col, h-[100dvh], overflow-hidden */}
+      <div className="flex-1 flex flex-col h-[100dvh] p-4 pt-20 md:p-8 md:pt-8 w-full overflow-hidden">
         
-        <header className="mb-6 md:mb-10 flex flex-col md:flex-row md:justify-between md:items-end gap-2">
+        {/* Header: Diberi class shrink-0 agar tidak menyusut saat tabel penuh */}
+        <header className="mb-4 md:mb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-2 shrink-0">
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-gray-800 flex items-center gap-3 tracking-wide">
               <FileText className="text-doabunda-primary" size={32} /> LAPORAN KEUANGAN
@@ -88,12 +90,15 @@ const Laporan = () => {
           </div>
         </header>
 
-        <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        {/* 3. WADAH TABEL: flex-1 flex-col overflow-hidden agar mengambil sisa ruang layar dengan pas */}
+        <div className="flex-1 bg-white rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
           
-          {/* Wadah pembungkus tabel agar bisa di-scroll di HP */}
-          <div className="overflow-x-auto w-full">
+          {/* 4. AREA SCROLL TABEL: overflow-auto, hanya area ini yang bisa di-scroll! */}
+          <div className="flex-1 overflow-auto w-full relative">
             <table className="w-full text-left min-w-[750px]">
-              <thead className="bg-doabunda-dark text-doabunda-gold text-[10px] md:text-xs uppercase font-bold tracking-widest border-b border-doabunda-primary/30">
+              
+              {/* 5. STICKY HEADER: sticky top-0 agar nyangkut di atas saat di-scroll ke bawah */}
+              <thead className="bg-doabunda-dark text-doabunda-gold text-[10px] md:text-xs uppercase font-bold tracking-widest sticky top-0 z-10 shadow-sm">
                 <tr>
                   <th className="p-4 md:p-5 font-black">Tanggal</th>
                   <th className="p-4 md:p-5 text-right font-black">Pendapatan</th>
@@ -103,6 +108,7 @@ const Laporan = () => {
                   <th className="p-4 md:p-5 text-center font-black">Aksi</th>
                 </tr>
               </thead>
+              
               <tbody className="divide-y divide-gray-50 text-xs md:text-sm">
                 {loading ? (
                   <tr><td colSpan="6" className="p-10 text-center text-doabunda-primary"><Loader2 className="animate-spin inline w-8 h-8" /></td></tr>
@@ -138,6 +144,7 @@ const Laporan = () => {
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
     </div>
