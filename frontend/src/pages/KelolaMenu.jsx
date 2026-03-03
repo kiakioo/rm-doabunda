@@ -74,14 +74,17 @@ const KelolaMenu = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 font-sans w-full">
+    // 1. KUNCI HALAMAN: Mencegah scroll pada body utama
+    <div className="flex h-[100dvh] bg-gray-50 font-sans w-full overflow-hidden">
       
       {/* MENAMPILKAN SIDEBAR SECARA CERDAS BERDASARKAN ROLE */}
       {user.role === 'admin' ? <SidebarAdmin /> : <SidebarKasir />}
 
-      <div className="flex-1 p-4 pt-20 md:p-8 md:pt-8 w-full overflow-x-hidden">
+      {/* 2. AREA KONTEN: Flex Column dengan Tinggi 100dvh */}
+      <div className="flex-1 flex flex-col h-[100dvh] p-4 pt-20 md:p-8 md:pt-8 w-full overflow-hidden">
         
-        <header className="mb-6 md:mb-8 flex items-center gap-3">
+        {/* Header - Shrink 0 agar ukurannya tidak mengecil */}
+        <header className="mb-4 md:mb-6 flex items-center gap-3 shrink-0">
           <Utensils className="text-doabunda-primary" size={32} />
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-wide uppercase">KELOLA MENU</h1>
@@ -89,50 +92,59 @@ const KelolaMenu = () => {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
+        {/* 3. WADAH GRID: Mengambil sisa ruang layar dan memotong konten yang berlebih */}
+        <div className="flex flex-col xl:flex-row gap-6 md:gap-8 flex-1 overflow-hidden">
           
-          <div className={`p-5 md:p-6 rounded-2xl shadow-sm h-fit border border-gray-100 border-t-8 transition-all ${editingId ? 'bg-blue-50 border-t-blue-500' : 'bg-white border-t-doabunda-primary'}`}>
-            <h2 className={`text-lg md:text-xl font-black mb-4 flex items-center gap-2 ${editingId ? 'text-blue-700' : 'text-doabunda-dark'}`}>
-              {editingId ? <Edit2 size={20} /> : <Plus size={20} />}
-              {editingId ? 'Edit Data Menu' : 'Tambah Menu Baru'}
-            </h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <input 
-                type="text" placeholder="Nama Menu" required
-                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
-                value={form.name} onChange={e => setForm({...form, name: e.target.value})} 
-              />
-              <select 
-                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
-                value={form.category} onChange={e => setForm({...form, category: e.target.value})}
-              >
-                <option value="Makanan">Makanan</option>
-                <option value="Minuman">Minuman</option>
-              </select>
-              <input 
-                type="number" placeholder="Harga (Rp)" required
-                className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
-                value={form.price} onChange={e => setForm({...form, price: e.target.value})} 
-              />
+          {/* KOLOM KIRI (Form) - Bisa di-scroll jika layar HP terlalu pendek */}
+          <div className="w-full xl:w-[35%] shrink-0 overflow-y-auto pb-4 xl:pb-0">
+            <div className={`p-5 md:p-6 rounded-2xl shadow-sm h-fit border border-gray-100 border-t-8 transition-all ${editingId ? 'bg-blue-50 border-t-blue-500' : 'bg-white border-t-doabunda-primary'}`}>
+              <h2 className={`text-lg md:text-xl font-black mb-4 flex items-center gap-2 ${editingId ? 'text-blue-700' : 'text-doabunda-dark'}`}>
+                {editingId ? <Edit2 size={20} /> : <Plus size={20} />}
+                {editingId ? 'Edit Data Menu' : 'Tambah Menu Baru'}
+              </h2>
               
-              <div className="flex flex-col gap-2 mt-2">
-                <button type="submit" className={`w-full text-white font-bold py-3.5 rounded-xl transition-all text-sm tracking-wide ${editingId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-doabunda-dark hover:bg-doabunda-primary'}`}>
-                  {editingId ? 'UPDATE MENU' : 'SIMPAN MENU'}
-                </button>
-                {editingId && (
-                  <button type="button" onClick={cancelEdit} className="w-full bg-white text-gray-500 border border-gray-300 font-bold py-3.5 rounded-xl hover:bg-gray-100 transition-all text-sm flex items-center justify-center gap-2">
-                    <X size={18} /> BATAL EDIT
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <input 
+                  type="text" placeholder="Nama Menu" required
+                  className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
+                  value={form.name} onChange={e => setForm({...form, name: e.target.value})} 
+                />
+                <select 
+                  className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
+                  value={form.category} onChange={e => setForm({...form, category: e.target.value})}
+                >
+                  <option value="Makanan">Makanan</option>
+                  <option value="Minuman">Minuman</option>
+                </select>
+                <input 
+                  type="number" placeholder="Harga (Rp)" required
+                  className="w-full p-3 md:p-3.5 text-sm border border-gray-200 rounded-xl focus:ring-1 focus:ring-doabunda-primary outline-none transition-all bg-white" 
+                  value={form.price} onChange={e => setForm({...form, price: e.target.value})} 
+                />
+                
+                <div className="flex flex-col gap-2 mt-2">
+                  <button type="submit" className={`w-full text-white font-bold py-3.5 rounded-xl transition-all text-sm tracking-wide ${editingId ? 'bg-blue-600 hover:bg-blue-700' : 'bg-doabunda-dark hover:bg-doabunda-primary'}`}>
+                    {editingId ? 'UPDATE MENU' : 'SIMPAN MENU'}
                   </button>
-                )}
-              </div>
-            </form>
+                  {editingId && (
+                    <button type="button" onClick={cancelEdit} className="w-full bg-white text-gray-500 border border-gray-300 font-bold py-3.5 rounded-xl hover:bg-gray-100 transition-all text-sm flex items-center justify-center gap-2">
+                      <X size={18} /> BATAL EDIT
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
           </div>
 
-          <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto w-full">
+          {/* KOLOM KANAN (Tabel) */}
+          <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+            
+            {/* 4. AREA SCROLL TABEL */}
+            <div className="flex-1 overflow-auto w-full relative">
               <table className="w-full text-left min-w-[600px]">
-                <thead className="bg-doabunda-dark text-doabunda-gold uppercase text-[11px] md:text-xs tracking-wider border-b border-doabunda-primary/30">
+                
+                {/* 5. STICKY HEADER */}
+                <thead className="bg-doabunda-dark text-doabunda-gold uppercase text-[11px] md:text-xs tracking-wider sticky top-0 z-10 shadow-sm border-b border-doabunda-primary/30">
                   <tr>
                     <th className="p-4 font-black">Nama Menu</th>
                     <th className="p-4 font-black">Kategori</th>
@@ -171,6 +183,7 @@ const KelolaMenu = () => {
                 </tbody>
               </table>
             </div>
+
           </div>
 
         </div>
