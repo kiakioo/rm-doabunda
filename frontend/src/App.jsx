@@ -11,6 +11,7 @@ import ManajemenUser from './pages/ManajemenUser';
 import Pengeluaran from './pages/Pengeluaran';
 import HistoryTransaksi from './pages/HistoryTransaksi';
 import Laporan from './pages/Laporan';
+import KasGaji from './pages/KasGaji'; // <-- IMPORT HALAMAN BARU BUKU KAS & GAJI
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -42,7 +43,6 @@ function App() {
         <Route path="/history-transaksi" element={<PrivateRoute><RoleRoute allowedRoles={['admin', 'kasir']}><HistoryTransaksi /></RoleRoute></PrivateRoute>} />
         <Route path="/kelola-menu" element={<PrivateRoute><RoleRoute allowedRoles={['admin', 'kasir']}><KelolaMenu /></RoleRoute></PrivateRoute>} />
 
-
         {/* ========================================================= */}
         {/* AREA KHUSUS ADMIN (Kasir dilarang masuk ke sini) */}
         {/* ========================================================= */}
@@ -51,6 +51,9 @@ function App() {
         <Route path="/manajemen-user" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><ManajemenUser /></RoleRoute></PrivateRoute>} />
         <Route path="/pengeluaran" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><Pengeluaran /></RoleRoute></PrivateRoute>} />
         <Route path="/admin/laporan" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><Laporan /></RoleRoute></PrivateRoute>} />
+        
+        {/* RUTE BARU BUKU KAS & GAJI (Hanya Admin) */}
+        <Route path="/kas-gaji" element={<PrivateRoute><RoleRoute allowedRoles={['admin']}><KasGaji /></RoleRoute></PrivateRoute>} />
 
         {/* 404 Fallback - Jika URL ngawur, kembalikan ke halaman awal */}
         <Route path="*" element={<Navigate to="/" />} />

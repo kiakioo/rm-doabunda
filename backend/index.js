@@ -52,11 +52,13 @@ const transaksiRoutes = require('./routes/transaksiRoutes');
 const rekapRoutes = require('./routes/rekapRoutes');
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const payoutRoutes = require('./routes/payoutRoutes');
 
 // Registrasi Rute API
 app.use('/api/auth', authRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/transactions', transaksiRoutes);
+app.use('/api/payouts', payoutRoutes);
 app.use('/api/rekap', rekapRoutes); 
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);

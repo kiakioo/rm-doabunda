@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, MonitorSmartphone, Utensils, FileText, Wallet, Users, Receipt, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, MonitorSmartphone, Utensils, FileText, Wallet, Users, Receipt, LogOut, Menu, X, Landmark } from 'lucide-react';
 
 const SidebarAdmin = () => {
   const location = useLocation();
@@ -19,6 +19,7 @@ const SidebarAdmin = () => {
     { path: '/history-transaksi', label: 'Riwayat Transaksi', icon: <Receipt size={20}/> },
     { path: '/admin/laporan', label: 'Laporan Keuangan', icon: <FileText size={20}/> },
     { path: '/pengeluaran', label: 'Buku Pengeluaran', icon: <Wallet size={20}/> },
+    { path: '/kas-gaji', label: 'Kas & Gaji', icon: <Landmark size={20}/> },
     { path: '/manajemen-user', label: 'Pegawai', icon: <Users size={20}/> }
   ];
 
